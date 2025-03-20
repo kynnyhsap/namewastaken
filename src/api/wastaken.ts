@@ -3,6 +3,7 @@ import { z } from "zod";
 import { wasYoutubeHandleTaken } from "./socials/youtube";
 import { wasInstagramHandleTaken } from "./socials/instagram";
 import { wasXHandleTaken } from "./socials/x";
+import { wasTiktokHandleTaken } from "./socials/tiktok";
 
 export const HandleSchema = z
   .string()
@@ -17,15 +18,17 @@ export const HandleSchema = z
 export async function wastaken(handle: string) {
   const h = HandleSchema.parse(handle);
 
-  const [youtube, instagram, x] = await Promise.all([
+  const [youtube, instagram, x, tiktok] = await Promise.all([
     wasYoutubeHandleTaken(h),
     wasInstagramHandleTaken(h),
     wasXHandleTaken(h),
+    wasTiktokHandleTaken(h),
   ]);
 
   return {
-    x,
+    // x,
     youtube,
     instagram,
+    tiktok,
   };
 }

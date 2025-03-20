@@ -2,18 +2,11 @@ export async function wasInstagramHandleTaken(handle: string) {
   const response = await fetch(`https://www.instagram.com/${handle}`);
   const html = await response.text();
 
-  const rewriter = new HTMLRewriter();
-  let title = "";
+  if (html.includes(`{"username":"${handle}"}`)) {
+    return true;
+  }
 
-  rewriter.on("title", {
-    text(text) {
-      title += text.text;
-    },
-  });
-
-  await rewriter.transform(new Response(html)).text();
-
-  return title !== "Page not found • Instagram";
+  return false;
 }
 
 export const INSTAGRAM_PAGES = [
