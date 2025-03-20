@@ -7,7 +7,7 @@ import { serveStatic } from "hono/bun";
 import { NotFoundPage } from "./pages/404.page";
 import { HomePage } from "./pages/home.page";
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3003;
 
 const app = new Hono();
 
@@ -20,10 +20,16 @@ app
     jsxRenderer(({ children }) => <>{children}</>, { stream: true })
   )
 
-  .get("/", (c) => c.render(<HomePage />))
+  .get("/", (c) => {
+    const handle = c.req.query("handle");
+    if (handle) {
+      return c.redirect(`/@${handle.replace("@", "")}`);
+    }
+    return c.render(<HomePage />);
+  })
+  .get("/:handle{@.+}", (c) => c.render(<HomePage />))
 
-  .get("*", serveStatic({ root: "./public" }))
-  .get("*", (c) => c.render(<NotFoundPage />));
+  .get("*", serveStatic({ root: "./public" }));
 
 export default {
   port: PORT,

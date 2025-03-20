@@ -1,12 +1,12 @@
 import { RootLayout } from "../layouts/root.layout";
-import { useRequestContext } from "hono/jsx-renderer";
 import { wastaken } from "../api/wastaken";
 import { ErrorBoundary, Suspense } from "hono/jsx";
+import { useRequestContext } from "hono/jsx-renderer";
 
-export async function HomePage() {
+export function HomePage() {
   const c = useRequestContext();
 
-  const handle = c.req.query("handle");
+  const handle = (c.req.param("handle") ?? "").replace("@", "");
 
   return (
     <RootLayout>
@@ -14,7 +14,7 @@ export async function HomePage() {
         <div class="max-w-2xl mx-auto">
           <div class="mb-12">
             <div class="flex items-center gap-3 mb-2">
-              <div class="w-6 h-6 border border-white/40"></div>
+              <a href="/" class="w-6 h-6 border border-white/40"></a>
               <h1 class="text-4xl font-bold tracking-tight">namewastaken</h1>
             </div>
             <p class="text-white/60 text-lg ml-9">
@@ -28,7 +28,7 @@ export async function HomePage() {
                 <input
                   type="text"
                   name="handle"
-                  value={handle || ""}
+                  value={handle?.replace("@", "") || ""}
                   class="flex-1 bg-black border border-white/20 px-4 py-3 rounded-none focus:outline-none focus:border-white/40 text-white placeholder-white/40"
                   placeholder="drop ur handle with or without @"
                 />
@@ -41,17 +41,19 @@ export async function HomePage() {
               </form>
             </div>
 
-            <ErrorBoundary
-              fallbackRender={(e) => (
-                <div class="text-red-300 text-center">
-                  oopsie daisy: {e.message}
-                </div>
-              )}
-            >
-              <Suspense fallback={<div>checking...</div>}>
-                <HandleCheckResults handle={handle} />
-              </Suspense>
-            </ErrorBoundary>
+            {handle && (
+              <ErrorBoundary
+                fallbackRender={(e) => (
+                  <div class="text-red-300 text-center">
+                    oopsie daisy: {e.message}
+                  </div>
+                )}
+              >
+                <Suspense fallback={<div>checking...</div>}>
+                  <HandleCheckResults handle={handle} />
+                </Suspense>
+              </ErrorBoundary>
+            )}
           </div>
         </div>
       </div>
