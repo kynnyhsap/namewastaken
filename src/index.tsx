@@ -7,7 +7,7 @@ import { serveStatic } from "hono/bun";
 import { NotFoundPage } from "./pages/404.page";
 import { HomePage } from "./pages/home.page";
 import { checkHandle } from "./api/handlers";
-
+import { rateLimitsMiddleware } from "./middleware/rate-limits.middleware";
 const PORT = process.env.PORT || 3001;
 
 const app = new Hono();
@@ -15,6 +15,8 @@ const app = new Hono();
 app
   .use("*", cors())
   .use("*", logger())
+
+  .use("*", rateLimitsMiddleware)
 
   .get("/api/check/:handle", async (c) => {
     const handle = c.req.param("handle");
