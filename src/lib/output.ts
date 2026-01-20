@@ -1,6 +1,7 @@
 import pc from "picocolors";
-import { type CheckResult, type CheckAllResult } from "./check";
+import { type CheckResult, type CheckAllResult, type BulkCheckResult } from "./check";
 import type { Provider } from "../providers";
+import { providers } from "../providers";
 
 /**
  * Format a single check result for display
@@ -153,4 +154,109 @@ export function formatSingleProviderResult(
   }
 
   return formatSingleResult(result);
+}
+
+/**
+ * Format bulk check results as a table
+ * Columns: Username | X | TikTok | Threads | YouTube | Instagram
+ */
+export function formatBulkTable(bulkResult: BulkCheckResult): string {
+  const { results } = bulkResult;
+  const lines: string[] = [];
+
+  // Calculate username column width
+  const usernameWidth = Math.max("Username".length, ...results.map((r) => r.username.length));
+
+  // Provider column widths (use short names for compactness)
+  const providerWidths = providers.map((p) => Math.max(p.name.length, "o".length));
+
+  // Header
+  lines.push(pc.bold(`\nChecking ${results.length} usernames:\n`));
+
+  // Build header row
+  const headerParts = [
+    `| ${pc.bold("Username".padEnd(usernameWidth))} |`,
+    ...providers.map((p, i) => ` ${pc.bold(p.name.padEnd(providerWidths[i]))} |`),
+  ];
+  const headerRow = headerParts.join("");
+
+  // Build separator
+  const sepParts = [
+    `+${"-".repeat(usernameWidth + 2)}+`,
+    ...providerWidths.map((w) => `${"-".repeat(w + 2)}+`),
+  ];
+  const separator = sepParts.join("");
+
+  lines.push(separator);
+  lines.push(headerRow);
+  lines.push(separator);
+
+  // Data rows
+  let totalAvailable = 0;
+  let totalTaken = 0;
+  let totalErrors = 0;
+
+  for (const userResult of results) {
+    const rowParts = [`| ${userResult.username.padEnd(usernameWidth)} |`];
+
+    for (let i = 0; i < providers.length; i++) {
+      const provider = providers[i];
+      const result = userResult.results.find((r) => r.provider.name === provider.name);
+      const width = providerWidths[i];
+
+      let cell: string;
+      if (!result) {
+        cell = pc.dim("-".padEnd(width));
+      } else if (result.error) {
+        cell = pc.yellow("?".padEnd(width));
+        totalErrors++;
+      } else if (result.taken) {
+        cell = pc.red("x".padEnd(width));
+        totalTaken++;
+      } else {
+        cell = pc.green("o".padEnd(width));
+        totalAvailable++;
+      }
+
+      rowParts.push(` ${cell} |`);
+    }
+
+    lines.push(rowParts.join(""));
+  }
+
+  lines.push(separator);
+
+  // Legend and summary
+  lines.push(`\n${pc.green("o")} available  ${pc.red("x")} taken  ${pc.yellow("?")} error`);
+
+  const summaryParts: string[] = [];
+  if (totalAvailable > 0) summaryParts.push(pc.green(`${totalAvailable} available`));
+  if (totalTaken > 0) summaryParts.push(pc.red(`${totalTaken} taken`));
+  if (totalErrors > 0) summaryParts.push(pc.yellow(`${totalErrors} errors`));
+
+  lines.push(`\nTotal: ${summaryParts.join(", ")}`);
+
+  return lines.join("\n");
+}
+
+/**
+ * Format bulk check results as JSON
+ */
+export function formatBulkJson(bulkResult: BulkCheckResult): string {
+  return JSON.stringify(
+    {
+      usernames: bulkResult.results.map((r) => ({
+        username: r.username,
+        results: r.results.map((pr) => ({
+          provider: pr.provider.name,
+          displayName: pr.provider.displayName,
+          taken: pr.taken,
+          available: !pr.taken && !pr.error,
+          error: pr.error ?? null,
+        })),
+      })),
+    },
+    null,
+    2,
+  );
 }

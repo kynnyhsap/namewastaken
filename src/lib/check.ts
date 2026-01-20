@@ -73,3 +73,18 @@ export function checkProviders(
     })),
   );
 }
+
+export interface BulkCheckResult {
+  results: CheckAllResult[];
+}
+
+/**
+ * Check multiple usernames across all providers concurrently
+ */
+export function checkBulk(usernames: string[]): Effect.Effect<BulkCheckResult, never> {
+  const checks = usernames.map((username) => checkAll(username));
+
+  return Effect.all(checks, { concurrency: "unbounded" }).pipe(
+    Effect.map((results) => ({ results })),
+  );
+}

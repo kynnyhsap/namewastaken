@@ -4,71 +4,64 @@ import { Effect } from "effect";
 import pc from "picocolors";
 
 import { safeParseHandle } from "./schema";
-import { checkAll, checkSingle } from "./lib/check";
-import { formatTable, formatJson, formatSingleProviderResult } from "./lib/output";
+import { checkAll, checkSingle, checkBulk } from "./lib/check";
+import {
+  formatTable,
+  formatJson,
+  formatSingleProviderResult,
+  formatBulkTable,
+  formatBulkJson,
+} from "./lib/output";
 import { setCacheEnabled, clearCache, getCacheStats } from "./lib/cache";
 import { providers, resolveProvider, parseUrl, isUrl, type Provider } from "./providers";
 
 const VERSION = "1.0.0";
 
-// Custom help display
+const HELP = `
+${pc.bold(pc.cyan("  namewastaken"))}${pc.dim(` v${VERSION}`)}
+${pc.dim("  Check if a username is taken on social platforms")}
+
+${pc.bold("  Usage:")}
+
+    ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.yellow("<username>")}              ${pc.dim("Check all platforms")}
+    ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.yellow("<u1> <u2> ...")}           ${pc.dim("Check multiple usernames")}
+    ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.magenta("<provider>")} ${pc.yellow("<username>")}   ${pc.dim("Check single platform")}
+    ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.yellow("<url>")}                    ${pc.dim("Check from profile URL")}
+
+${pc.bold("  Providers:")}
+
+    ${pc.magenta("x")}          ${pc.dim("twitter")}   X / Twitter
+    ${pc.magenta("tiktok")}     ${pc.dim("tt")}        TikTok
+    ${pc.magenta("threads")}              Threads
+    ${pc.magenta("youtube")}    ${pc.dim("yt")}        YouTube
+    ${pc.magenta("instagram")}  ${pc.dim("ig")}        Instagram
+
+${pc.bold("  Options:")}
+
+    ${pc.cyan("--json")}                       ${pc.dim("Output results as JSON")}
+    ${pc.cyan("--no-cache")}                   ${pc.dim("Skip cache, fetch fresh results")}
+    ${pc.cyan("-v, --version")}                ${pc.dim("Show version number")}
+    ${pc.cyan("-h, --help")}                   ${pc.dim("Show this help message")}
+
+${pc.bold("  Commands:")}
+
+    ${pc.cyan("mcp")}                          ${pc.dim("Start MCP server")}
+    ${pc.cyan("cache clear")}                  ${pc.dim("Clear the cache")}
+    ${pc.cyan("cache stats")}                  ${pc.dim("Show cache statistics")}
+
+${pc.bold("  Examples:")}
+
+    ${pc.green("$")} namewastaken ${pc.yellow("mrbeast")}
+    ${pc.green("$")} namewastaken ${pc.yellow("mrbeast pewdiepie ninja")}
+    ${pc.green("$")} namewastaken ${pc.magenta("tt")} ${pc.yellow("mrbeast")}
+    ${pc.green("$")} namewastaken ${pc.magenta("ig")} ${pc.yellow("mrbeast")} ${pc.cyan("--json")}
+    ${pc.green("$")} namewastaken ${pc.yellow("https://x.com/MrBeast")}
+`;
+
 function showHelp() {
-  console.log();
-  console.log(pc.bold(pc.cyan("  namewastaken")) + pc.dim(` v${VERSION}`));
-  console.log(pc.dim("  Check if a username is taken on social platforms"));
-  console.log();
-
-  console.log(pc.bold("  Usage:"));
-  console.log();
-  console.log(
-    `    ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.yellow("<username>")}              ${pc.dim("Check all platforms")}`,
-  );
-  console.log(
-    `    ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.magenta("<provider>")} ${pc.yellow("<username>")}   ${pc.dim("Check single platform")}`,
-  );
-  console.log(
-    `    ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.yellow("<url>")}                    ${pc.dim("Check from profile URL")}`,
-  );
-  console.log();
-
-  console.log(pc.bold("  Providers:"));
-  console.log();
-  console.log(`    ${pc.magenta("x")}          ${pc.dim("twitter")}   X / Twitter`);
-  console.log(`    ${pc.magenta("tiktok")}     ${pc.dim("tt")}        TikTok`);
-  console.log(`    ${pc.magenta("threads")}              Threads`);
-  console.log(`    ${pc.magenta("youtube")}    ${pc.dim("yt")}        YouTube`);
-  console.log(`    ${pc.magenta("instagram")}  ${pc.dim("ig")}        Instagram`);
-  console.log();
-
-  console.log(pc.bold("  Options:"));
-  console.log();
-  console.log(`    ${pc.cyan("--json")}                       ${pc.dim("Output results as JSON")}`);
-  console.log(
-    `    ${pc.cyan("--no-cache")}                   ${pc.dim("Skip cache, fetch fresh results")}`,
-  );
-  console.log(`    ${pc.cyan("-v, --version")}                ${pc.dim("Show version number")}`);
-  console.log(`    ${pc.cyan("-h, --help")}                   ${pc.dim("Show this help message")}`);
-  console.log();
-
-  console.log(pc.bold("  Commands:"));
-  console.log();
-  console.log(`    ${pc.cyan("mcp")}                          ${pc.dim("Start MCP server")}`);
-  console.log(`    ${pc.cyan("cache clear")}                  ${pc.dim("Clear the cache")}`);
-  console.log(`    ${pc.cyan("cache stats")}                  ${pc.dim("Show cache statistics")}`);
-  console.log();
-
-  console.log(pc.bold("  Examples:"));
-  console.log();
-  console.log(`    ${pc.green("$")} namewastaken ${pc.yellow("mrbeast")}`);
-  console.log(`    ${pc.green("$")} namewastaken ${pc.magenta("tt")} ${pc.yellow("mrbeast")}`);
-  console.log(
-    `    ${pc.green("$")} namewastaken ${pc.magenta("ig")} ${pc.yellow("mrbeast")} ${pc.cyan("--json")}`,
-  );
-  console.log(`    ${pc.green("$")} namewastaken ${pc.yellow("https://x.com/MrBeast")}`);
-  console.log();
+  console.log(HELP);
 }
 
-// Helper function to handle a single provider check
 async function handleSingleProvider(provider: Provider, username: string, json: boolean) {
   const parsed = safeParseHandle(username);
   if (!parsed.success) {
@@ -81,7 +74,6 @@ async function handleSingleProvider(provider: Provider, username: string, json: 
   process.exit(0);
 }
 
-// Helper function to handle all providers check
 async function handleAllProviders(username: string, json: boolean) {
   const parsed = safeParseHandle(username);
   if (!parsed.success) {
@@ -99,6 +91,30 @@ async function handleAllProviders(username: string, json: boolean) {
   process.exit(0);
 }
 
+async function handleBulk(usernames: string[], json: boolean) {
+  const validUsernames: string[] = [];
+
+  for (const username of usernames) {
+    const parsed = safeParseHandle(username);
+    if (!parsed.success) {
+      console.error(
+        pc.red(`Error: Invalid username "${username}": ${parsed.error.errors[0].message}`),
+      );
+      process.exit(1);
+    }
+    validUsernames.push(parsed.data);
+  }
+
+  const results = await Effect.runPromise(checkBulk(validUsernames));
+
+  if (json) {
+    console.log(formatBulkJson(results));
+  } else {
+    console.log(formatBulkTable(results));
+  }
+  process.exit(0);
+}
+
 program
   .name("namewastaken")
   .description("Check if a username is taken on social platforms")
@@ -110,45 +126,60 @@ program
 
 // Default command - check all providers or handle URL
 program
-  .argument("[input]", "Username or URL to check")
+  .argument("[inputs...]", "Username(s) or URL to check")
   .option("--json", "Output results as JSON")
   .option("--no-cache", "Skip cache, fetch fresh results")
-  .action(async (input: string | undefined, options: { json?: boolean; cache?: boolean }) => {
-    // Handle --no-cache flag
+  .action(async (inputs: string[], options: { json?: boolean; cache?: boolean }) => {
     if (options.cache === false) {
       setCacheEnabled(false);
     }
-    if (!input) {
+
+    if (!inputs || inputs.length === 0) {
       showHelp();
       return;
     }
 
-    // Check if input is a URL
-    if (isUrl(input)) {
-      const parsed = parseUrl(input);
-      if (!parsed) {
-        console.error(pc.red("Error: Unsupported URL format"));
-        console.error(
-          pc.dim("Supported platforms: TikTok, Instagram, X/Twitter, Threads, YouTube"),
-        );
+    // Single input
+    if (inputs.length === 1) {
+      const input = inputs[0];
+
+      // Check if input is a URL
+      if (isUrl(input)) {
+        const parsed = parseUrl(input);
+        if (!parsed) {
+          console.error(pc.red("Error: Unsupported URL format"));
+          console.error(
+            pc.dim("Supported platforms: TikTok, Instagram, X/Twitter, Threads, YouTube"),
+          );
+          process.exit(1);
+        }
+        await handleSingleProvider(parsed.provider, parsed.username, options.json ?? false);
+        return;
+      }
+
+      // Check if input might be a provider alias
+      const maybeProvider = resolveProvider(input);
+      if (maybeProvider) {
+        console.error(pc.red(`Error: Missing username for ${maybeProvider.displayName}`));
+        console.error(pc.dim(`Usage: namewastaken ${input} <username>`));
         process.exit(1);
       }
 
-      await handleSingleProvider(parsed.provider, parsed.username, options.json ?? false);
+      // Single username - check all providers
+      await handleAllProviders(input, options.json ?? false);
       return;
     }
 
-    // Check if input might be a provider alias (for backwards compatibility with old syntax)
-    const maybeProvider = resolveProvider(input);
-    if (maybeProvider) {
-      // This means user typed just the provider name without a username
-      console.error(pc.red(`Error: Missing username for ${maybeProvider.displayName}`));
-      console.error(pc.dim(`Usage: namewastaken ${input} <username>`));
-      process.exit(1);
+    // Multiple inputs - check if first is a provider
+    const maybeProvider = resolveProvider(inputs[0]);
+    if (maybeProvider && inputs.length === 2) {
+      // Provider + username
+      await handleSingleProvider(maybeProvider, inputs[1], options.json ?? false);
+      return;
     }
 
-    // Treat as username - check all providers
-    await handleAllProviders(input, options.json ?? false);
+    // Bulk mode - multiple usernames
+    await handleBulk(inputs, options.json ?? false);
   });
 
 // MCP command
@@ -172,16 +203,14 @@ program
       process.exit(0);
     } else if (action === "stats") {
       const stats = getCacheStats();
-      console.log();
-      console.log(pc.bold("  Cache Statistics"));
-      console.log();
-      console.log(`    ${pc.dim("Entries:")}     ${stats.entries}`);
-      console.log(
-        `    ${pc.dim("Providers:")}   ${stats.providers.length > 0 ? stats.providers.join(", ") : "none"}`,
-      );
-      console.log(`    ${pc.dim("Location:")}    ~/.namewastaken/cache.json`);
-      console.log(`    ${pc.dim("TTL:")}         24 hours`);
-      console.log();
+      console.log(`
+${pc.bold("  Cache Statistics")}
+
+    ${pc.dim("Entries:")}     ${stats.entries}
+    ${pc.dim("Providers:")}   ${stats.providers.length > 0 ? stats.providers.join(", ") : "none"}
+    ${pc.dim("Location:")}    ~/.namewastaken/cache.json
+    ${pc.dim("TTL:")}         24 hours
+`);
       process.exit(0);
     } else {
       console.error(pc.red(`Unknown cache action: ${action}`));
