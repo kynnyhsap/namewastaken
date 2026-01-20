@@ -1,7 +1,10 @@
 import { describe, test, expect, afterEach } from "bun:test";
+
 import { Effect } from "effect";
-import { instagram } from "./instagram";
+
 import { mockFetch } from "../../test-utils";
+
+import { instagram } from "./instagram";
 
 describe("Instagram provider", () => {
   const originalFetch = globalThis.fetch;

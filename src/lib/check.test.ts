@@ -1,9 +1,12 @@
 import { describe, test, expect, beforeEach, afterEach } from "bun:test";
+
 import { Effect } from "effect";
-import { checkSingle, checkAll, checkProviders } from "./check";
-import { setCacheEnabled, clearCache } from "./cache";
+
 import { tiktok, instagram } from "../providers";
 import { mockFetch } from "../test-utils";
+
+import { setCacheEnabled, clearCache } from "./cache";
+import { checkSingle, checkAll, checkProviders } from "./check";
 
 describe("Check orchestration", () => {
   const originalFetch = globalThis.fetch;

@@ -1,9 +1,10 @@
-import { tiktok } from "./tiktok";
-import { instagram } from "./instagram";
-import { x } from "./x";
-import { threads } from "./threads";
-import { youtube } from "./youtube";
 import type { Provider } from "./types";
+
+import { instagram } from "./instagram";
+import { threads } from "./threads";
+import { tiktok } from "./tiktok";
+import { x } from "./x";
+import { youtube } from "./youtube";
 
 export type { Provider } from "./types";
 export { ProviderCheckError } from "./types";

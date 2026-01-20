@@ -28,6 +28,8 @@
  */
 
 import { Effect } from "effect";
+
+import { setCacheEnabled } from "./lib/cache";
 import { checkSingle, checkAll, checkProviders } from "./lib/check";
 import {
   providers,
@@ -35,7 +37,6 @@ import {
   parseUrl as parseProfileUrl,
   type Provider,
 } from "./providers";
-import { setCacheEnabled } from "./lib/cache";
 
 // ============================================================================
 // Types

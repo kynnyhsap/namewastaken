@@ -1,8 +1,9 @@
-import { z } from "zod";
-import { Effect } from "effect";
-import { checkAll, checkBulk } from "../../lib/check";
-import { setCacheEnabled } from "../../lib/cache";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { Effect } from "effect";
+import { z } from "zod";
+
+import { setCacheEnabled } from "../../lib/cache";
+import { checkAll, checkBulk } from "../../lib/check";
 
 export function registerCheckUsername(server: McpServer) {
   server.tool(

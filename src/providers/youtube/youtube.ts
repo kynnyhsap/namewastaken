@@ -1,4 +1,5 @@
 import { Effect, Schedule } from "effect";
+
 import { Provider, ProviderCheckError } from "../types";
 
 const TIMEOUT_MS = 5000;

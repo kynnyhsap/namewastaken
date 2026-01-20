@@ -1,5 +1,7 @@
 import { describe, test, expect } from "bun:test";
+
 import { Effect } from "effect";
+
 import { threads } from "./threads";
 
 // Integration tests - make real HTTP requests

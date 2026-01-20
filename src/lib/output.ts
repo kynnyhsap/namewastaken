@@ -1,7 +1,9 @@
-import pc from "picocolors";
-import { type CheckResult, type CheckAllResult, type BulkCheckResult } from "./check";
 import type { Provider } from "../providers";
+import pc from "picocolors";
+
 import { providers } from "../providers";
+
+import { type CheckResult, type CheckAllResult, type BulkCheckResult } from "./check";
 
 function formatDuration(ms: number): string {
   if (ms < 1000) return `${ms}ms`;

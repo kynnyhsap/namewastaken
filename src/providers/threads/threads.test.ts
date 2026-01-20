@@ -1,7 +1,10 @@
 import { describe, test, expect, afterEach } from "bun:test";
+
 import { Effect } from "effect";
-import { threads } from "./threads";
+
 import { mockFetch } from "../../test-utils";
+
+import { threads } from "./threads";
 
 describe("Threads provider", () => {
   const originalFetch = globalThis.fetch;

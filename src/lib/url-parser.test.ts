@@ -1,4 +1,5 @@
 import { describe, test, expect } from "bun:test";
+
 import { parseUrl, isUrl, tiktok, instagram, x, threads, youtube } from "../providers";
 
 describe("URL parser", () => {

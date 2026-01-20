@@ -1,6 +1,7 @@
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Elysia } from "elysia";
 import { mcp } from "elysia-mcp";
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+
 import { registerAllTools } from "./tools";
 
 const DEFAULT_PORT = 3000;

@@ -1,6 +1,6 @@
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 // Provider name is just a string identifier
 
 const CACHE_DIR = join(homedir(), ".namewastaken");

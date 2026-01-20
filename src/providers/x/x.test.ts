@@ -1,7 +1,10 @@
 import { describe, test, expect, afterEach } from "bun:test";
+
 import { Effect } from "effect";
-import { x } from "./x";
+
 import { mockFetch } from "../../test-utils";
+
+import { x } from "./x";
 
 describe("X/Twitter provider", () => {
   const originalFetch = globalThis.fetch;

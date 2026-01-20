@@ -3,7 +3,7 @@ import { program } from "commander";
 import { Effect } from "effect";
 import pc from "picocolors";
 
-import { safeParseHandle } from "./schema";
+import { setCacheEnabled, clearCache, getCacheStats } from "./lib/cache";
 import {
   checkAll,
   checkSingle,
@@ -18,8 +18,8 @@ import {
   formatBulkTable,
   formatBulkJson,
 } from "./lib/output";
-import { setCacheEnabled, clearCache, getCacheStats } from "./lib/cache";
 import { providers, resolveProvider, parseUrl, isUrl, type Provider } from "./providers";
+import { safeParseHandle } from "./schema";
 
 const VERSION = "1.0.0";
 

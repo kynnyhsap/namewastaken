@@ -1,7 +1,10 @@
 import { describe, test, expect, afterEach } from "bun:test";
+
 import { Effect } from "effect";
-import { tiktok } from "./tiktok";
+
 import { mockFetch } from "../../test-utils";
+
+import { tiktok } from "./tiktok";
 
 describe("TikTok provider", () => {
   const originalFetch = globalThis.fetch;

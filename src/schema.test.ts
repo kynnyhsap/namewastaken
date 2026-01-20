@@ -1,4 +1,5 @@
 import { describe, test, expect } from "bun:test";
+
 import { HandleSchema, parseHandle, safeParseHandle } from "./schema";
 
 describe("Handle validation", () => {

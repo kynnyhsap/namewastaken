@@ -1,7 +1,10 @@
 import { describe, test, expect, afterEach } from "bun:test";
+
 import { Effect } from "effect";
-import { youtube } from "./youtube";
+
 import { mockFetch } from "../../test-utils";
+
+import { youtube } from "./youtube";
 
 describe("YouTube provider", () => {
   const originalFetch = globalThis.fetch;
