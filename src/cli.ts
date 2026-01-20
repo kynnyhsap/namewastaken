@@ -46,8 +46,8 @@ ${pc.bold("  Platforms:")}
 
 ${pc.bold("  Options:")}
 
+    ${pc.cyan("-j, --json")}                     ${pc.dim("Output results as JSON")}
     ${pc.cyan("-p, --platforms <name>")}         ${pc.dim("Check specific platform(s)")}
-    ${pc.cyan("--json")}                         ${pc.dim("Output results as JSON")}
     ${pc.cyan("-q, --quiet")}                    ${pc.dim("No output, exit 0 if available")}
     ${pc.cyan("-v, --version")}                  ${pc.dim("Show version number")}
     ${pc.cyan("-h, --help")}                     ${pc.dim("Show this help message")}
@@ -250,7 +250,7 @@ program
 program
   .argument("[inputs...]", "Username(s) or URL to check")
   .option("-p, --platforms <platforms>", "Check specific platform(s), comma-separated")
-  .option("--json", "Output results as JSON")
+  .option("-j, --json", "Output results as JSON")
   .option("-q, --quiet", "No output, exit 0 if available, 1 if taken")
   .action(
     async (inputs: string[], options: { platforms?: string; json?: boolean; quiet?: boolean }) => {
