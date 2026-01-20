@@ -41,13 +41,13 @@
     "dist"
   ],
   "scripts": {
-    "cli": "bun run ./src/index.ts",
-    "cli:dev": "bun --watch run ./src/index.ts",
+    "cli": "bun run ./src/cli.ts",
+    "dev": "bun --watch run ./src/cli.ts",
     "build": "bun run build:sdk && bun run build:cli",
     "build:sdk": "bun build ./src/sdk.ts --outdir=dist --outfile=dist/sdk.js --target=node --format=esm",
-    "build:cli": "bun build ./src/index.ts --outfile=dist/cli.js --target=node --format=esm && sed -i '' '1s|#!/usr/bin/env bun|#!/usr/bin/env node|' dist/cli.js",
+    "build:cli": "bun build ./src/cli.ts --outfile=dist/cli.js --target=node --format=esm && sed -i '' '1s|#!/usr/bin/env bun|#!/usr/bin/env node|' dist/cli.js",
     "build:types": "tsc --project tsconfig.build.json",
-    "build:binary": "bun build ./src/index.ts --compile --outfile=dist/namewastaken",
+    "build:binary": "bun build ./src/cli.ts --compile --outfile=dist/namewastaken",
     "prepublishOnly": "bun run build && bun run build:types",
     "test": "bun test",
     "fmt": "oxfmt --write src/",
