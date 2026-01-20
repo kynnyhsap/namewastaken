@@ -13,25 +13,22 @@ describe("Telegram provider", () => {
     globalThis.fetch = originalFetch;
   });
 
-  test("returns true when username is taken (View title)", async () => {
+  test("returns true when username is taken (has profile image)", async () => {
     globalThis.fetch = mockFetch(() =>
-      Promise.resolve(new Response("<title>Telegram: View @mrbeast</title>")),
+      Promise.resolve(
+        new Response('<meta property="og:image" content="https://cdn4.telesco.pe/file/photo.jpg">'),
+      ),
     );
 
     const result = await Effect.runPromise(telegram.check("mrbeast"));
     expect(result).toBe(true);
   });
 
-  test("returns true when username is taken (channel/user name in title)", async () => {
-    globalThis.fetch = mockFetch(() => Promise.resolve(new Response("<title>MrBeast</title>")));
-
-    const result = await Effect.runPromise(telegram.check("mrbeast"));
-    expect(result).toBe(true);
-  });
-
-  test("returns false when username is available (Contact title)", async () => {
+  test("returns false when username is available (generic telegram logo)", async () => {
     globalThis.fetch = mockFetch(() =>
-      Promise.resolve(new Response("<title>Telegram: Contact @available123</title>")),
+      Promise.resolve(
+        new Response('<meta property="og:image" content="https://telegram.org/img/t_logo_2x.png">'),
+      ),
     );
 
     const result = await Effect.runPromise(telegram.check("available123"));
@@ -45,7 +42,9 @@ describe("Telegram provider", () => {
       if (attempts < 3) {
         return Promise.reject(new Error("Network error"));
       }
-      return Promise.resolve(new Response("<title>Telegram: View @testuser</title>"));
+      return Promise.resolve(
+        new Response('<meta property="og:image" content="https://cdn4.telesco.pe/file/photo.jpg">'),
+      );
     });
 
     const result = await Effect.runPromise(telegram.check("testuser"));
@@ -69,7 +68,9 @@ describe("Telegram provider", () => {
     globalThis.fetch = mockFetch((input: RequestInfo | URL, options?: RequestInit) => {
       calledUrl = String(input);
       calledHeaders = (options?.headers as Record<string, string>) ?? {};
-      return Promise.resolve(new Response("<title>Telegram: Contact @myusername</title>"));
+      return Promise.resolve(
+        new Response('<meta property="og:image" content="https://telegram.org/img/t_logo_2x.png">'),
+      );
     });
 
     await Effect.runPromise(telegram.check("myusername"));

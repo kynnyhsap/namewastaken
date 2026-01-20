@@ -23,12 +23,14 @@ const check = (username: string) =>
           },
         });
         const html = await response.text();
-        // Available usernames have title "Telegram: Contact @username"
-        // Taken usernames have title "Telegram: View @username" or the actual name
-        const titleMatch = html.match(/<title>([^<]*)<\/title>/);
-        const title = titleMatch?.[1] ?? "";
-        // If title contains "Contact @", the username is available
-        return !title.includes("Contact @");
+        // Available usernames have:
+        // - og:image pointing to generic Telegram logo
+        // - empty og:description
+        // Taken usernames (personal or channels) have:
+        // - og:image pointing to profile/channel photo (cdn4.telesco.pe)
+        // - og:description with bio/description
+        const hasProfileImage = html.includes('og:image" content="https://cdn');
+        return hasProfileImage;
       } finally {
         clearTimeout(timeout);
       }
