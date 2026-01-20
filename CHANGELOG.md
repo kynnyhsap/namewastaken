@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0] - 2025-01-20
+
+### Added
+- Telegram platform provider (`telegram`, `tg`)
+- Facebook platform provider (`facebook`, `fb`)
+- `nwt` CLI alias - use `npx nwt mrbeast` as shorthand
+
+### Changed
+- X/Twitter: Now uses syndication API for reliable detection
+- Removed cache functionality (was causing stale results)
+
+### Breaking Changes
+- Removed `--no-cache` CLI option
+- Removed `cache clear` and `cache stats` CLI commands
+- Removed `cache` option from SDK methods
+
 ## [1.3.0] - 2025-01-20
 
 ### Added

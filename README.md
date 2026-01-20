@@ -12,6 +12,8 @@ npm install namewastaken
 
 ```bash
 npx namewastaken mrbeast
+# or
+npx nwt mrbeast
 ```
 
 Or install globally:
@@ -47,7 +49,6 @@ namewastaken mrbeast --json
 |---------------------|---------------------------------|
 | `-p, --platforms`   | Check specific platform(s)      |
 | `--json`            | Output results as JSON          |
-| `--no-cache`        | Skip cache, fetch fresh results |
 | `-v, --version`     | Show version number             |
 | `-h, --help`        | Show help message               |
 
@@ -58,8 +59,6 @@ namewastaken mrbeast --json
 | `platforms`     | List all supported platforms         |
 | `mcp`           | Start MCP server (STDIO)             |
 | `mcp --http`    | Start MCP server (HTTP)              |
-| `cache clear`   | Clear the cache                      |
-| `cache stats`   | Show cache statistics                |
 
 ## SDK Usage
 
@@ -74,7 +73,7 @@ await nwt.taken('mrbeast')      // true - taken on at least one platform
 const result = await nwt.check('mrbeast')
 result.tiktok.taken      // true
 result.instagram.taken   // true  
-result.summary           // { available: 0, taken: 5, errors: 0 }
+result.summary           // { available: 0, taken: 7, errors: 0 }
 
 // Filter to specific platforms
 const result = await nwt.check('mrbeast', { platforms: ['tiktok', 'ig'] })
@@ -127,6 +126,7 @@ await available('mrbeast')
 | YouTube   | `youtube`   | `yt`            |
 | Instagram | `instagram` | `ig`            |
 | Facebook  | `facebook`  | `fb`            |
+| Telegram  | `telegram`  | `tg`            |
 
 ## MCP Server
 
