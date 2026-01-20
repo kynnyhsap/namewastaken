@@ -4,13 +4,17 @@
   "description": "Check if a username is taken on social platforms",
   "type": "module",
   "bin": {
-    "namewastaken": "./src/index.ts"
+    "namewastaken": "./dist/index.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "start": "bun run ./src/index.ts",
     "dev": "bun --watch run ./src/index.ts",
-    "build": "bun build ./src/index.ts --compile --outfile=dist/namewastaken",
-    "install:global": "bun run build && cp dist/namewastaken /usr/local/bin/namewastaken",
+    "build": "bun build ./src/index.ts --outdir=dist --target=node --format=esm && sed -i '' '1s|#!/usr/bin/env bun|#!/usr/bin/env node|' dist/index.js",
+    "build:binary": "bun build ./src/index.ts --compile --outfile=dist/namewastaken",
+    "prepublishOnly": "bun run build",
     "test": "bun test",
     "test:e2e": "bun test --test-name-pattern e2e",
     "fmt": "oxfmt --write src/",
@@ -19,7 +23,6 @@
     "lint": "oxlint src/",
     "check": "bun run fmt:check && bun run typecheck && bun run lint && bun run test"
   },
-  "private": true,
   "devDependencies": {
     "@types/bun": "latest",
     "oxfmt": "^0.26.0",

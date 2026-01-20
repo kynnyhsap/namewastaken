@@ -4,7 +4,13 @@ import { Effect } from "effect";
 import pc from "picocolors";
 
 import { safeParseHandle } from "./schema";
-import { checkAll, checkSingle, checkBulk, checkProviders } from "./lib/check";
+import {
+  checkAll,
+  checkSingle,
+  checkBulk,
+  checkProviders,
+  checkBulkWithProviders,
+} from "./lib/check";
 import {
   formatTable,
   formatJson,
@@ -25,10 +31,10 @@ ${pc.bold("  Usage:")}
 
     ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.yellow("<username>")}                    ${pc.dim("Check all platforms")}
     ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.yellow("<u1> <u2> ...")}                 ${pc.dim("Check multiple usernames")}
-    ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.yellow("<username>")} ${pc.cyan("-s")} ${pc.magenta("<provider>")}    ${pc.dim("Check single platform")}
+    ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.yellow("<username>")} ${pc.cyan("-p")} ${pc.magenta("<platform>")}    ${pc.dim("Check specific platform")}
     ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.yellow("<url>")}                          ${pc.dim("Check from profile URL")}
 
-${pc.bold("  Providers:")}
+${pc.bold("  Platforms:")}
 
     ${pc.magenta("x")}          ${pc.dim("twitter")}   X / Twitter
     ${pc.magenta("tiktok")}     ${pc.dim("tt")}        TikTok
@@ -38,7 +44,7 @@ ${pc.bold("  Providers:")}
 
 ${pc.bold("  Options:")}
 
-    ${pc.cyan("-s, --social <provider>")}        ${pc.dim("Check specific platform only")}
+    ${pc.cyan("-p, --platform <name>")}          ${pc.dim("Check specific platform(s)")}
     ${pc.cyan("--json")}                         ${pc.dim("Output results as JSON")}
     ${pc.cyan("--no-cache")}                     ${pc.dim("Skip cache, fetch fresh results")}
     ${pc.cyan("-v, --version")}                  ${pc.dim("Show version number")}
@@ -46,9 +52,9 @@ ${pc.bold("  Options:")}
 
 ${pc.bold("  Commands:")}
 
+    ${pc.cyan("platforms")}                      ${pc.dim("List all supported platforms")}
     ${pc.cyan("mcp")}                            ${pc.dim("Start MCP server (Streamable HTTP)")}
     ${pc.cyan("mcp --stdio")}                    ${pc.dim("Start MCP server (STDIO)")}
-    ${pc.cyan("mcp --sse")}                      ${pc.dim("Start MCP server (SSE, legacy)")}
     ${pc.cyan("cache clear")}                    ${pc.dim("Clear the cache")}
     ${pc.cyan("cache stats")}                    ${pc.dim("Show cache statistics")}
 
@@ -56,8 +62,8 @@ ${pc.bold("  Examples:")}
 
     ${pc.green("$")} namewastaken ${pc.yellow("mrbeast")}
     ${pc.green("$")} namewastaken ${pc.yellow("mrbeast pewdiepie ninja")}
-    ${pc.green("$")} namewastaken ${pc.yellow("mrbeast")} ${pc.cyan("-s")} ${pc.magenta("tiktok")}
-    ${pc.green("$")} namewastaken ${pc.yellow("mrbeast")} ${pc.cyan("-s")} ${pc.magenta("tt,ig,yt")}
+    ${pc.green("$")} namewastaken ${pc.yellow("mrbeast")} ${pc.cyan("-p")} ${pc.magenta("tiktok")}
+    ${pc.green("$")} namewastaken ${pc.yellow("mrbeast")} ${pc.cyan("-p")} ${pc.magenta("tt,ig,yt")}
     ${pc.green("$")} namewastaken ${pc.yellow("https://x.com/MrBeast")}
 `;
 
@@ -144,14 +150,44 @@ async function handleBulk(usernames: string[], json: boolean) {
   process.exit(0);
 }
 
-function parseProviderOption(value: string): Provider[] {
+async function handleBulkWithPlatforms(
+  usernames: string[],
+  platformList: Provider[],
+  json: boolean,
+) {
+  const validUsernames: string[] = [];
+
+  for (const username of usernames) {
+    const parsed = safeParseHandle(username);
+    if (!parsed.success) {
+      console.error(
+        pc.red(`Error: Invalid username "${username}": ${parsed.error.issues[0].message}`),
+      );
+      process.exit(1);
+    }
+    validUsernames.push(parsed.data);
+  }
+
+  const start = performance.now();
+  const results = await Effect.runPromise(checkBulkWithProviders(validUsernames, platformList));
+  const durationMs = Math.round(performance.now() - start);
+
+  if (json) {
+    console.log(formatBulkJson(results, durationMs));
+  } else {
+    console.log(formatBulkTable(results, durationMs, platformList));
+  }
+  process.exit(0);
+}
+
+function parsePlatformOption(value: string): Provider[] {
   const names = value.split(",").map((s) => s.trim());
   const result: Provider[] = [];
 
   for (const name of names) {
     const provider = resolveProvider(name);
     if (!provider) {
-      console.error(pc.red(`Error: Unknown provider "${name}"`));
+      console.error(pc.red(`Error: Unknown platform "${name}"`));
       console.error(pc.dim(`Available: ${providers.map((p) => p.name).join(", ")}`));
       process.exit(1);
     }
@@ -173,11 +209,11 @@ program
 // Default command - check all providers or handle URL
 program
   .argument("[inputs...]", "Username(s) or URL to check")
-  .option("-s, --social <providers>", "Check specific platform(s), comma-separated")
+  .option("-p, --platform <platforms>", "Check specific platform(s), comma-separated")
   .option("--json", "Output results as JSON")
   .option("--no-cache", "Skip cache, fetch fresh results")
   .action(
-    async (inputs: string[], options: { social?: string; json?: boolean; cache?: boolean }) => {
+    async (inputs: string[], options: { platform?: string; json?: boolean; cache?: boolean }) => {
       if (options.cache === false) {
         setCacheEnabled(false);
       }
@@ -187,9 +223,9 @@ program
         return;
       }
 
-      // If --social is provided, use it
-      if (options.social) {
-        const providerList = parseProviderOption(options.social);
+      // If --platform is provided, use it
+      if (options.platform) {
+        const providerList = parsePlatformOption(options.platform);
 
         if (inputs.length === 1) {
           const input = inputs[0];
@@ -202,12 +238,8 @@ program
             await handleProviders(providerList, input, options.json ?? false);
           }
         } else {
-          // Multiple usernames with --social - not supported, check all for each
-          console.error(pc.red("Error: --social option cannot be used with multiple usernames"));
-          console.error(
-            pc.dim("Use without --social to check multiple usernames on all platforms"),
-          );
-          process.exit(1);
+          // Multiple usernames with --platform - bulk mode for specific platforms
+          await handleBulkWithPlatforms(inputs, providerList, options.json ?? false);
         }
         return;
       }
@@ -258,6 +290,20 @@ program
       const { startHttpServer } = await import("./mcp");
       await startHttpServer({ port: parseInt(options.port, 10) });
     }
+  });
+
+// Platforms command
+program
+  .command("platforms")
+  .description("List all supported platforms")
+  .action(() => {
+    console.log(`\n${pc.bold("  Supported Platforms:")}\n`);
+    for (const p of providers) {
+      const aliases = p.aliases.length > 0 ? pc.dim(` (${p.aliases.join(", ")})`) : "";
+      console.log(`    ${pc.magenta(p.name.padEnd(10))} ${p.displayName}${aliases}`);
+    }
+    console.log();
+    process.exit(0);
   });
 
 // Cache command

@@ -170,15 +170,22 @@ export function formatSingleProviderResult(
  * Format bulk check results as a table
  * Columns: Username | X | TikTok | Threads | YouTube | Instagram
  */
-export function formatBulkTable(bulkResult: BulkCheckResult, durationMs?: number): string {
+export function formatBulkTable(
+  bulkResult: BulkCheckResult,
+  durationMs?: number,
+  platformList?: Provider[],
+): string {
   const { results } = bulkResult;
   const lines: string[] = [];
+
+  // Use provided platforms or all providers
+  const platforms = platformList ?? providers;
 
   // Calculate username column width
   const usernameWidth = Math.max("Username".length, ...results.map((r) => r.username.length));
 
   // Provider column widths (use short names for compactness)
-  const providerWidths = providers.map((p) => Math.max(p.name.length, "o".length));
+  const providerWidths = platforms.map((p) => Math.max(p.name.length, "o".length));
 
   // Header
   lines.push(pc.bold(`\nChecking ${results.length} usernames:\n`));
@@ -186,7 +193,7 @@ export function formatBulkTable(bulkResult: BulkCheckResult, durationMs?: number
   // Build header row
   const headerParts = [
     `| ${pc.bold("Username".padEnd(usernameWidth))} |`,
-    ...providers.map((p, i) => ` ${pc.bold(p.name.padEnd(providerWidths[i]))} |`),
+    ...platforms.map((p, i) => ` ${pc.bold(p.name.padEnd(providerWidths[i]))} |`),
   ];
   const headerRow = headerParts.join("");
 
@@ -209,8 +216,8 @@ export function formatBulkTable(bulkResult: BulkCheckResult, durationMs?: number
   for (const userResult of results) {
     const rowParts = [`| ${userResult.username.padEnd(usernameWidth)} |`];
 
-    for (let i = 0; i < providers.length; i++) {
-      const provider = providers[i];
+    for (let i = 0; i < platforms.length; i++) {
+      const provider = platforms[i];
       const result = userResult.results.find((r) => r.provider.name === provider.name);
       const width = providerWidths[i];
 
