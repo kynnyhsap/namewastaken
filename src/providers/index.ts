@@ -1,5 +1,6 @@
 import type { Provider } from "./types";
 
+import { facebook } from "./facebook";
 import { instagram } from "./instagram";
 import { threads } from "./threads";
 import { tiktok } from "./tiktok";
@@ -10,7 +11,7 @@ export type { Provider } from "./types";
 export { ProviderCheckError } from "./types";
 
 /** All registered providers */
-export const providers: Provider[] = [x, tiktok, threads, youtube, instagram];
+export const providers: Provider[] = [x, tiktok, threads, youtube, instagram, facebook];
 
 /** Map of provider name to provider */
 const providersByName = new Map(providers.map((p) => [p.name, p]));
@@ -50,3 +51,4 @@ export { instagram } from "./instagram";
 export { x } from "./x";
 export { threads } from "./threads";
 export { youtube } from "./youtube";
+export { facebook } from "./facebook";

@@ -126,6 +126,7 @@ await available('mrbeast')
 | Threads   | `threads`   |                 |
 | YouTube   | `youtube`   | `yt`            |
 | Instagram | `instagram` | `ig`            |
+| Facebook  | `facebook`  | `fb`            |
 
 ## MCP Server
 

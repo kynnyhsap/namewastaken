@@ -57,6 +57,7 @@ export type CheckResults = {
   threads?: PlatformCheckResult;
   youtube?: PlatformCheckResult;
   instagram?: PlatformCheckResult;
+  facebook?: PlatformCheckResult;
 };
 
 /** Full check result with summary */
@@ -276,6 +277,7 @@ const tiktok = createPlatformChecker(providers.find((p) => p.name === "tiktok")!
 const threads = createPlatformChecker(providers.find((p) => p.name === "threads")!);
 const youtube = createPlatformChecker(providers.find((p) => p.name === "youtube")!);
 const instagram = createPlatformChecker(providers.find((p) => p.name === "instagram")!);
+const facebook = createPlatformChecker(providers.find((p) => p.name === "facebook")!);
 
 /**
  * Check username availability.
@@ -360,6 +362,7 @@ const nwt = {
   threads,
   youtube,
   instagram,
+  facebook,
 
   // Utilities
   platforms,
@@ -369,4 +372,4 @@ const nwt = {
 export default nwt;
 
 // Named exports for convenience
-export { check, checkMany, available, taken, x, tiktok, threads, youtube, instagram };
+export { check, checkMany, available, taken, x, tiktok, threads, youtube, instagram, facebook };
