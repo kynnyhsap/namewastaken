@@ -52,6 +52,7 @@ function showHelp() {
 
   console.log(pc.bold("  Commands:"));
   console.log();
+  console.log(`    ${pc.cyan("mcp")}                          ${pc.dim("Start MCP server")}`);
   console.log(`    ${pc.cyan("cache clear")}                  ${pc.dim("Clear the cache")}`);
   console.log(`    ${pc.cyan("cache stats")}                  ${pc.dim("Show cache statistics")}`);
   console.log();
@@ -148,6 +149,16 @@ program
 
     // Treat as username - check all providers
     await handleAllProviders(input, options.json ?? false);
+  });
+
+// MCP command
+program
+  .command("mcp")
+  .description("Start MCP server for AI assistants")
+  .option("-p, --port <port>", "Port to run server on", "3000")
+  .action(async (options: { port: string }) => {
+    const { startMcpServer } = await import("./mcp");
+    await startMcpServer({ port: parseInt(options.port, 10) });
   });
 
 // Cache command
