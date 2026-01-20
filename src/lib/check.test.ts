@@ -1,8 +1,9 @@
-import { describe, test, expect, mock, beforeEach, afterEach } from "bun:test";
+import { describe, test, expect, beforeEach, afterEach } from "bun:test";
 import { Effect } from "effect";
 import { checkSingle, checkAll, checkProviders } from "./check";
 import { setCacheEnabled, clearCache } from "./cache";
 import { tiktok, instagram } from "../providers";
+import { mockFetch } from "../test-utils";
 
 describe("Check orchestration", () => {
   const originalFetch = globalThis.fetch;
@@ -20,7 +21,7 @@ describe("Check orchestration", () => {
 
   describe("checkSingle", () => {
     test("returns result for taken username", async () => {
-      globalThis.fetch = mock(() => Promise.resolve(new Response(`"desc":"@testuser`)));
+      globalThis.fetch = mockFetch(() => Promise.resolve(new Response(`"desc":"@testuser`)));
 
       const result = await Effect.runPromise(checkSingle(tiktok, "testuser"));
       expect(result.provider).toBe(tiktok);
@@ -28,7 +29,7 @@ describe("Check orchestration", () => {
     });
 
     test("returns result for available username", async () => {
-      globalThis.fetch = mock(() => Promise.resolve(new Response("Not found")));
+      globalThis.fetch = mockFetch(() => Promise.resolve(new Response("Not found")));
 
       const result = await Effect.runPromise(checkSingle(tiktok, "testuser"));
       expect(result.provider).toBe(tiktok);
@@ -36,7 +37,7 @@ describe("Check orchestration", () => {
     });
 
     test("returns error result on network failure", async () => {
-      globalThis.fetch = mock(() => Promise.reject(new Error("Network error")));
+      globalThis.fetch = mockFetch(() => Promise.reject(new Error("Network error")));
 
       const result = await Effect.runPromise(checkSingle(tiktok, "testuser"));
       expect(result.provider).toBe(tiktok);
@@ -48,7 +49,7 @@ describe("Check orchestration", () => {
   describe("checkAll", () => {
     test("checks all providers concurrently", async () => {
       const fetchCalls: string[] = [];
-      globalThis.fetch = mock((input: RequestInfo | URL) => {
+      globalThis.fetch = mockFetch((input: RequestInfo | URL) => {
         fetchCalls.push(String(input));
         return Promise.resolve(new Response("Not found", { status: 404 }));
       });
@@ -70,7 +71,7 @@ describe("Check orchestration", () => {
     });
 
     test("handles mixed results", async () => {
-      globalThis.fetch = mock((input: RequestInfo | URL) => {
+      globalThis.fetch = mockFetch((input: RequestInfo | URL) => {
         const url = String(input);
         if (url.includes("tiktok")) {
           return Promise.resolve(new Response(`"desc":"@testuser`));
@@ -96,7 +97,7 @@ describe("Check orchestration", () => {
   describe("checkProviders", () => {
     test("checks only specified providers", async () => {
       const fetchCalls: string[] = [];
-      globalThis.fetch = mock((input: RequestInfo | URL) => {
+      globalThis.fetch = mockFetch((input: RequestInfo | URL) => {
         fetchCalls.push(String(input));
         return Promise.resolve(new Response("Not found", { status: 404 }));
       });

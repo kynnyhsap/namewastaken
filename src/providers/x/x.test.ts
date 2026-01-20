@@ -1,6 +1,7 @@
-import { describe, test, expect, mock, afterEach } from "bun:test";
+import { describe, test, expect, afterEach } from "bun:test";
 import { Effect } from "effect";
 import { x } from "./x";
+import { mockFetch } from "../../test-utils";
 
 describe("X/Twitter provider", () => {
   const originalFetch = globalThis.fetch;
@@ -10,14 +11,14 @@ describe("X/Twitter provider", () => {
   });
 
   test("returns true when username is taken", async () => {
-    globalThis.fetch = mock(() => Promise.resolve(new Response("Profile page content")));
+    globalThis.fetch = mockFetch(() => Promise.resolve(new Response("Profile page content")));
 
     const result = await Effect.runPromise(x.check("testuser"));
     expect(result).toBe(true);
   });
 
   test("returns false when username is available (account doesn't exist)", async () => {
-    globalThis.fetch = mock(() => Promise.resolve(new Response("This account doesn't exist")));
+    globalThis.fetch = mockFetch(() => Promise.resolve(new Response("This account doesn't exist")));
 
     const result = await Effect.runPromise(x.check("testuser"));
     expect(result).toBe(false);
@@ -25,7 +26,7 @@ describe("X/Twitter provider", () => {
 
   test("retries on network failure and succeeds", async () => {
     let attempts = 0;
-    globalThis.fetch = mock(() => {
+    globalThis.fetch = mockFetch(() => {
       attempts++;
       if (attempts < 3) {
         return Promise.reject(new Error("Network error"));
@@ -39,7 +40,7 @@ describe("X/Twitter provider", () => {
   });
 
   test("fails after max retries", async () => {
-    globalThis.fetch = mock(() => {
+    globalThis.fetch = mockFetch(() => {
       return Promise.reject(new Error("Network error"));
     });
 
@@ -51,7 +52,7 @@ describe("X/Twitter provider", () => {
     let calledUrl = "";
     let calledHeaders: Record<string, string> = {};
 
-    globalThis.fetch = mock((input: RequestInfo | URL, options?: RequestInit) => {
+    globalThis.fetch = mockFetch((input: RequestInfo | URL, options?: RequestInit) => {
       calledUrl = String(input);
       calledHeaders = (options?.headers as Record<string, string>) ?? {};
       return Promise.resolve(new Response(""));

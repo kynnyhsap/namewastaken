@@ -1,6 +1,7 @@
-import { describe, test, expect, mock, afterEach } from "bun:test";
+import { describe, test, expect, afterEach } from "bun:test";
 import { Effect } from "effect";
 import { threads } from "./threads";
+import { mockFetch } from "../../test-utils";
 
 describe("Threads provider", () => {
   const originalFetch = globalThis.fetch;
@@ -15,7 +16,7 @@ describe("Threads provider", () => {
       value: "https://www.threads.com/@testuser",
     });
 
-    globalThis.fetch = mock(() => Promise.resolve(mockResponse));
+    globalThis.fetch = mockFetch(() => Promise.resolve(mockResponse));
 
     const result = await Effect.runPromise(threads.check("testuser"));
     expect(result).toBe(true);
@@ -27,7 +28,7 @@ describe("Threads provider", () => {
       value: "https://www.threads.com/login/?next=...",
     });
 
-    globalThis.fetch = mock(() => Promise.resolve(mockResponse));
+    globalThis.fetch = mockFetch(() => Promise.resolve(mockResponse));
 
     const result = await Effect.runPromise(threads.check("testuser"));
     expect(result).toBe(false);
@@ -35,7 +36,7 @@ describe("Threads provider", () => {
 
   test("retries on network failure and succeeds", async () => {
     let attempts = 0;
-    globalThis.fetch = mock(() => {
+    globalThis.fetch = mockFetch(() => {
       attempts++;
       if (attempts < 3) {
         return Promise.reject(new Error("Network error"));
@@ -53,7 +54,7 @@ describe("Threads provider", () => {
   });
 
   test("fails after max retries", async () => {
-    globalThis.fetch = mock(() => {
+    globalThis.fetch = mockFetch(() => {
       return Promise.reject(new Error("Network error"));
     });
 
@@ -68,7 +69,7 @@ describe("Threads provider", () => {
       value: "https://www.threads.com/@myusername",
     });
 
-    globalThis.fetch = mock((input: RequestInfo | URL) => {
+    globalThis.fetch = mockFetch((input: RequestInfo | URL) => {
       calledUrl = String(input);
       return Promise.resolve(mockResponse);
     });

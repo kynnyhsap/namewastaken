@@ -1,6 +1,7 @@
-import { describe, test, expect, mock, afterEach } from "bun:test";
+import { describe, test, expect, afterEach } from "bun:test";
 import { Effect } from "effect";
 import { tiktok } from "./tiktok";
+import { mockFetch } from "../../test-utils";
 
 describe("TikTok provider", () => {
   const originalFetch = globalThis.fetch;
@@ -10,7 +11,7 @@ describe("TikTok provider", () => {
   });
 
   test("returns true when username is taken", async () => {
-    globalThis.fetch = mock(() =>
+    globalThis.fetch = mockFetch(() =>
       Promise.resolve(new Response(`some content "desc":"@testuser more content`)),
     );
 
@@ -19,7 +20,9 @@ describe("TikTok provider", () => {
   });
 
   test("returns false when username is available", async () => {
-    globalThis.fetch = mock(() => Promise.resolve(new Response("Page not found - no user here")));
+    globalThis.fetch = mockFetch(() =>
+      Promise.resolve(new Response("Page not found - no user here")),
+    );
 
     const result = await Effect.runPromise(tiktok.check("testuser"));
     expect(result).toBe(false);
@@ -27,7 +30,7 @@ describe("TikTok provider", () => {
 
   test("retries on network failure and succeeds", async () => {
     let attempts = 0;
-    globalThis.fetch = mock(() => {
+    globalThis.fetch = mockFetch(() => {
       attempts++;
       if (attempts < 3) {
         return Promise.reject(new Error("Network error"));
@@ -41,7 +44,7 @@ describe("TikTok provider", () => {
   });
 
   test("fails after max retries", async () => {
-    globalThis.fetch = mock(() => {
+    globalThis.fetch = mockFetch(() => {
       return Promise.reject(new Error("Network error"));
     });
 
@@ -51,7 +54,7 @@ describe("TikTok provider", () => {
 
   test("calls correct URL with @ prefix", async () => {
     let calledUrl = "";
-    globalThis.fetch = mock((input: RequestInfo | URL) => {
+    globalThis.fetch = mockFetch((input: RequestInfo | URL) => {
       calledUrl = String(input);
       return Promise.resolve(new Response(""));
     });

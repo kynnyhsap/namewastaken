@@ -57,7 +57,7 @@
     "check": "bun run fmt:check && bun run typecheck && bun run lint && bun run test"
   },
   "devDependencies": {
-    "@types/node": "^22",
+    "@types/bun": "latest",
     "oxfmt": "^0.26.0",
     "oxlint": "^1.41.0"
   },
