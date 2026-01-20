@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.1] - 2025-01-20
+
+### Fixed
+- CLI version now syncs with package.json automatically
+
 ## [1.6.0] - 2025-01-20
 
 ### Added
