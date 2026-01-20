@@ -47,8 +47,8 @@ namewastaken mrbeast --json
 
 | Option              | Description                              |
 |---------------------|------------------------------------------|
+| `-j, --json`        | Output results as JSON                   |
 | `-p, --platforms`   | Check specific platform(s)               |
-| `--json`            | Output results as JSON                   |
 | `-q, --quiet`       | No output, exit 0 if available, 1 if taken |
 | `-v, --version`     | Show version number                      |
 | `-h, --help`        | Show help message                        |
