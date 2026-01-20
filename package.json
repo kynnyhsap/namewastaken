@@ -12,9 +12,12 @@
     "build": "bun build ./src/index.ts --compile --outfile=dist/namewastaken",
     "install:global": "bun run build && cp dist/namewastaken /usr/local/bin/namewastaken",
     "test": "bun test",
-    "test:integration": "bun test src/__tests__/integration.test.ts",
+    "test:e2e": "bun test --test-name-pattern e2e",
     "fmt": "oxfmt --write src/",
-    "fmt:check": "oxfmt --check src/"
+    "fmt:check": "oxfmt --check src/",
+    "typecheck": "tsc --noEmit --skipLibCheck",
+    "lint": "oxlint src/",
+    "check": "bun run fmt:check && bun run typecheck && bun run lint && bun run test"
   },
   "private": true,
   "devDependencies": {

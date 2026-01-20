@@ -1,6 +1,6 @@
 import { describe, test, expect } from "bun:test";
 import { Effect } from "effect";
-import { checkYouTube } from "./youtube";
+import { youtube } from "./youtube";
 
 // Integration tests - make real HTTP requests
 // Run with: bun test src/providers/youtube/youtube.e2e.ts
@@ -10,12 +10,12 @@ describe.skip("YouTube provider (e2e)", () => {
   const LIKELY_AVAILABLE = "xyzabc123456789test";
 
   test("detects taken username", async () => {
-    const result = await Effect.runPromise(checkYouTube(KNOWN_TAKEN));
+    const result = await Effect.runPromise(youtube.check(KNOWN_TAKEN));
     expect(result).toBe(true);
   }, 10000);
 
   test("detects available username", async () => {
-    const result = await Effect.runPromise(checkYouTube(LIKELY_AVAILABLE));
+    const result = await Effect.runPromise(youtube.check(LIKELY_AVAILABLE));
     expect(result).toBe(false);
   }, 10000);
 });

@@ -4,7 +4,7 @@ import { Effect } from "effect";
 import pc from "picocolors";
 
 import { safeParseHandle } from "./schema";
-import { checkAll, checkSingle, checkBulk } from "./lib/check";
+import { checkAll, checkSingle, checkBulk, checkProviders } from "./lib/check";
 import {
   formatTable,
   formatJson,
@@ -23,10 +23,10 @@ ${pc.dim("  Check if a username is taken on social platforms")}
 
 ${pc.bold("  Usage:")}
 
-    ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.yellow("<username>")}              ${pc.dim("Check all platforms")}
-    ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.yellow("<u1> <u2> ...")}           ${pc.dim("Check multiple usernames")}
-    ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.magenta("<provider>")} ${pc.yellow("<username>")}   ${pc.dim("Check single platform")}
-    ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.yellow("<url>")}                    ${pc.dim("Check from profile URL")}
+    ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.yellow("<username>")}                    ${pc.dim("Check all platforms")}
+    ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.yellow("<u1> <u2> ...")}                 ${pc.dim("Check multiple usernames")}
+    ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.yellow("<username>")} ${pc.cyan("-s")} ${pc.magenta("<provider>")}    ${pc.dim("Check single platform")}
+    ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.yellow("<url>")}                          ${pc.dim("Check from profile URL")}
 
 ${pc.bold("  Providers:")}
 
@@ -38,23 +38,24 @@ ${pc.bold("  Providers:")}
 
 ${pc.bold("  Options:")}
 
-    ${pc.cyan("--json")}                       ${pc.dim("Output results as JSON")}
-    ${pc.cyan("--no-cache")}                   ${pc.dim("Skip cache, fetch fresh results")}
-    ${pc.cyan("-v, --version")}                ${pc.dim("Show version number")}
-    ${pc.cyan("-h, --help")}                   ${pc.dim("Show this help message")}
+    ${pc.cyan("-s, --social <provider>")}        ${pc.dim("Check specific platform only")}
+    ${pc.cyan("--json")}                         ${pc.dim("Output results as JSON")}
+    ${pc.cyan("--no-cache")}                     ${pc.dim("Skip cache, fetch fresh results")}
+    ${pc.cyan("-v, --version")}                  ${pc.dim("Show version number")}
+    ${pc.cyan("-h, --help")}                     ${pc.dim("Show this help message")}
 
 ${pc.bold("  Commands:")}
 
-    ${pc.cyan("mcp")}                          ${pc.dim("Start MCP server")}
-    ${pc.cyan("cache clear")}                  ${pc.dim("Clear the cache")}
-    ${pc.cyan("cache stats")}                  ${pc.dim("Show cache statistics")}
+    ${pc.cyan("mcp")}                            ${pc.dim("Start MCP server")}
+    ${pc.cyan("cache clear")}                    ${pc.dim("Clear the cache")}
+    ${pc.cyan("cache stats")}                    ${pc.dim("Show cache statistics")}
 
 ${pc.bold("  Examples:")}
 
     ${pc.green("$")} namewastaken ${pc.yellow("mrbeast")}
     ${pc.green("$")} namewastaken ${pc.yellow("mrbeast pewdiepie ninja")}
-    ${pc.green("$")} namewastaken ${pc.magenta("tt")} ${pc.yellow("mrbeast")}
-    ${pc.green("$")} namewastaken ${pc.magenta("ig")} ${pc.yellow("mrbeast")} ${pc.cyan("--json")}
+    ${pc.green("$")} namewastaken ${pc.yellow("mrbeast")} ${pc.cyan("-s")} ${pc.magenta("tiktok")}
+    ${pc.green("$")} namewastaken ${pc.yellow("mrbeast")} ${pc.cyan("-s")} ${pc.magenta("tt,ig,yt")}
     ${pc.green("$")} namewastaken ${pc.yellow("https://x.com/MrBeast")}
 `;
 
@@ -71,6 +72,23 @@ async function handleSingleProvider(provider: Provider, username: string, json: 
 
   const result = await Effect.runPromise(checkSingle(provider, parsed.data));
   console.log(formatSingleProviderResult(provider, parsed.data, result, json));
+  process.exit(0);
+}
+
+async function handleProviders(providerList: Provider[], username: string, json: boolean) {
+  const parsed = safeParseHandle(username);
+  if (!parsed.success) {
+    console.error(pc.red(`Error: ${parsed.error.errors[0].message}`));
+    process.exit(1);
+  }
+
+  const result = await Effect.runPromise(checkProviders(providerList, parsed.data));
+
+  if (json) {
+    console.log(formatJson(result));
+  } else {
+    console.log(formatTable(result));
+  }
   process.exit(0);
 }
 
@@ -115,6 +133,23 @@ async function handleBulk(usernames: string[], json: boolean) {
   process.exit(0);
 }
 
+function parseProviderOption(value: string): Provider[] {
+  const names = value.split(",").map((s) => s.trim());
+  const result: Provider[] = [];
+
+  for (const name of names) {
+    const provider = resolveProvider(name);
+    if (!provider) {
+      console.error(pc.red(`Error: Unknown provider "${name}"`));
+      console.error(pc.dim(`Available: ${providers.map((p) => p.name).join(", ")}`));
+      process.exit(1);
+    }
+    result.push(provider);
+  }
+
+  return result;
+}
+
 program
   .name("namewastaken")
   .description("Check if a username is taken on social platforms")
@@ -127,60 +162,72 @@ program
 // Default command - check all providers or handle URL
 program
   .argument("[inputs...]", "Username(s) or URL to check")
+  .option("-s, --social <providers>", "Check specific platform(s), comma-separated")
   .option("--json", "Output results as JSON")
   .option("--no-cache", "Skip cache, fetch fresh results")
-  .action(async (inputs: string[], options: { json?: boolean; cache?: boolean }) => {
-    if (options.cache === false) {
-      setCacheEnabled(false);
-    }
+  .action(
+    async (inputs: string[], options: { social?: string; json?: boolean; cache?: boolean }) => {
+      if (options.cache === false) {
+        setCacheEnabled(false);
+      }
 
-    if (!inputs || inputs.length === 0) {
-      showHelp();
-      return;
-    }
-
-    // Single input
-    if (inputs.length === 1) {
-      const input = inputs[0];
-
-      // Check if input is a URL
-      if (isUrl(input)) {
-        const parsed = parseUrl(input);
-        if (!parsed) {
-          console.error(pc.red("Error: Unsupported URL format"));
-          console.error(
-            pc.dim("Supported platforms: TikTok, Instagram, X/Twitter, Threads, YouTube"),
-          );
-          process.exit(1);
-        }
-        await handleSingleProvider(parsed.provider, parsed.username, options.json ?? false);
+      if (!inputs || inputs.length === 0) {
+        showHelp();
         return;
       }
 
-      // Check if input might be a provider alias
-      const maybeProvider = resolveProvider(input);
-      if (maybeProvider) {
-        console.error(pc.red(`Error: Missing username for ${maybeProvider.displayName}`));
-        console.error(pc.dim(`Usage: namewastaken ${input} <username>`));
-        process.exit(1);
+      // If --social is provided, use it
+      if (options.social) {
+        const providerList = parseProviderOption(options.social);
+
+        if (inputs.length === 1) {
+          const input = inputs[0];
+
+          // Single provider, single username
+          if (providerList.length === 1) {
+            await handleSingleProvider(providerList[0], input, options.json ?? false);
+          } else {
+            // Multiple providers, single username
+            await handleProviders(providerList, input, options.json ?? false);
+          }
+        } else {
+          // Multiple usernames with --social - not supported, check all for each
+          console.error(pc.red("Error: --social option cannot be used with multiple usernames"));
+          console.error(
+            pc.dim("Use without --social to check multiple usernames on all platforms"),
+          );
+          process.exit(1);
+        }
+        return;
       }
 
-      // Single username - check all providers
-      await handleAllProviders(input, options.json ?? false);
-      return;
-    }
+      // Single input
+      if (inputs.length === 1) {
+        const input = inputs[0];
 
-    // Multiple inputs - check if first is a provider
-    const maybeProvider = resolveProvider(inputs[0]);
-    if (maybeProvider && inputs.length === 2) {
-      // Provider + username
-      await handleSingleProvider(maybeProvider, inputs[1], options.json ?? false);
-      return;
-    }
+        // Check if input is a URL
+        if (isUrl(input)) {
+          const parsed = parseUrl(input);
+          if (!parsed) {
+            console.error(pc.red("Error: Unsupported URL format"));
+            console.error(
+              pc.dim("Supported platforms: TikTok, Instagram, X/Twitter, Threads, YouTube"),
+            );
+            process.exit(1);
+          }
+          await handleSingleProvider(parsed.provider, parsed.username, options.json ?? false);
+          return;
+        }
 
-    // Bulk mode - multiple usernames
-    await handleBulk(inputs, options.json ?? false);
-  });
+        // Single username - check all providers
+        await handleAllProviders(input, options.json ?? false);
+        return;
+      }
+
+      // Bulk mode - multiple usernames
+      await handleBulk(inputs, options.json ?? false);
+    },
+  );
 
 // MCP command
 program
@@ -218,23 +265,5 @@ ${pc.bold("  Cache Statistics")}
       process.exit(1);
     }
   });
-
-// Generate provider commands dynamically
-for (const provider of providers) {
-  const cmd = program
-    .command(`${provider.name} <username>`)
-    .description(`Check if username is taken on ${provider.displayName}`)
-    .option("--json", "Output as JSON")
-    .option("--no-cache", "Skip cache")
-    .action(async (username: string, options: { json?: boolean; cache?: boolean }) => {
-      if (options.cache === false) setCacheEnabled(false);
-      await handleSingleProvider(provider, username, options.json ?? false);
-    });
-
-  // Add aliases (skip the first one which is the provider name itself)
-  for (const alias of provider.aliases.slice(1)) {
-    cmd.alias(alias);
-  }
-}
 
 program.parse();

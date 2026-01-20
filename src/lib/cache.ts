@@ -1,7 +1,7 @@
 import { homedir } from "os";
 import { join } from "path";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
-import type { ProviderName } from "../providers";
+// Provider name is just a string identifier
 
 const CACHE_DIR = join(homedir(), ".namewastaken");
 const CACHE_FILE = join(CACHE_DIR, "cache.json");
@@ -55,7 +55,7 @@ function writeCache(data: CacheData) {
   }
 }
 
-export function getCached(provider: ProviderName, username: string): boolean | null {
+export function getCached(provider: string, username: string): boolean | null {
   if (!cacheEnabled) return null;
 
   const cache = readCache();
@@ -71,7 +71,7 @@ export function getCached(provider: ProviderName, username: string): boolean | n
   return entry.taken;
 }
 
-export function setCache(provider: ProviderName, username: string, taken: boolean) {
+export function setCache(provider: string, username: string, taken: boolean) {
   if (!cacheEnabled) return;
 
   const cache = readCache();
