@@ -5,11 +5,13 @@ import {
   ALL_PROVIDERS,
   getProviderChecker,
 } from "../providers";
+import { getCached, setCache } from "./cache";
 
 export interface CheckResult {
   provider: ProviderName;
   taken: boolean;
   error?: string;
+  cached?: boolean;
 }
 
 export interface CheckAllResult {
@@ -24,10 +26,20 @@ export function checkSingle(
   provider: ProviderName,
   username: string
 ): Effect.Effect<CheckResult, never> {
+  // Check cache first
+  const cached = getCached(provider, username);
+  if (cached !== null) {
+    return Effect.succeed({ provider, taken: cached, cached: true });
+  }
+
   const checker = getProviderChecker(provider);
 
   return checker(username).pipe(
-    Effect.map((taken) => ({ provider, taken })),
+    Effect.map((taken) => {
+      // Store in cache
+      setCache(provider, username, taken);
+      return { provider, taken };
+    }),
     Effect.catchAll((error: CheckError) =>
       Effect.succeed({
         provider,

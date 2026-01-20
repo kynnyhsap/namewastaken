@@ -1,12 +1,20 @@
-import { describe, test, expect, mock, afterEach } from "bun:test";
+import { describe, test, expect, mock, beforeEach, afterEach } from "bun:test";
 import { Effect } from "effect";
 import { checkSingle, checkAll, checkProviders } from "./check";
+import { setCacheEnabled, clearCache } from "./cache";
 
 describe("Check orchestration", () => {
   const originalFetch = globalThis.fetch;
 
+  beforeEach(() => {
+    // Disable cache for tests
+    setCacheEnabled(false);
+    clearCache();
+  });
+
   afterEach(() => {
     globalThis.fetch = originalFetch;
+    setCacheEnabled(true);
   });
 
   describe("checkSingle", () => {

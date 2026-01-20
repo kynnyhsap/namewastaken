@@ -7,6 +7,7 @@ import { safeParseHandle } from "./schema";
 import { parseUrl, isUrl } from "./lib/url-parser";
 import { checkAll, checkSingle } from "./lib/check";
 import { formatTable, formatJson, formatSingleProviderResult } from "./lib/output";
+import { setCacheEnabled, clearCache, getCacheStats } from "./lib/cache";
 import {
   resolveProvider,
   PROVIDER_DISPLAY_NAMES,
@@ -41,8 +42,15 @@ function showHelp() {
   console.log(pc.bold("  Options:"));
   console.log();
   console.log(`    ${pc.cyan("--json")}                       ${pc.dim("Output results as JSON")}`);
+  console.log(`    ${pc.cyan("--no-cache")}                   ${pc.dim("Skip cache, fetch fresh results")}`);
   console.log(`    ${pc.cyan("-v, --version")}                ${pc.dim("Show version number")}`);
   console.log(`    ${pc.cyan("-h, --help")}                   ${pc.dim("Show this help message")}`);
+  console.log();
+
+  console.log(pc.bold("  Commands:"));
+  console.log();
+  console.log(`    ${pc.cyan("cache clear")}                  ${pc.dim("Clear the cache")}`);
+  console.log(`    ${pc.cyan("cache stats")}                  ${pc.dim("Show cache statistics")}`);
   console.log();
 
   console.log(pc.bold("  Examples:"));
@@ -102,7 +110,12 @@ program
 program
   .argument("[input]", "Username or URL to check")
   .option("--json", "Output results as JSON")
-  .action(async (input: string | undefined, options: { json?: boolean }) => {
+  .option("--no-cache", "Skip cache, fetch fresh results")
+  .action(async (input: string | undefined, options: { json?: boolean; cache?: boolean }) => {
+    // Handle --no-cache flag
+    if (options.cache === false) {
+      setCacheEnabled(false);
+    }
     if (!input) {
       showHelp();
       return;
@@ -136,13 +149,42 @@ program
     await handleAllProviders(input, options.json ?? false);
   });
 
+// Cache command
+program
+  .command("cache <action>")
+  .description("Manage the cache (clear, stats)")
+  .action((action: string) => {
+    if (action === "clear") {
+      clearCache();
+      console.log(pc.green("Cache cleared successfully"));
+      process.exit(0);
+    } else if (action === "stats") {
+      const stats = getCacheStats();
+      console.log();
+      console.log(pc.bold("  Cache Statistics"));
+      console.log();
+      console.log(`    ${pc.dim("Entries:")}     ${stats.entries}`);
+      console.log(`    ${pc.dim("Providers:")}   ${stats.providers.length > 0 ? stats.providers.join(", ") : "none"}`);
+      console.log(`    ${pc.dim("Location:")}    ~/.namewastaken/cache.json`);
+      console.log(`    ${pc.dim("TTL:")}         24 hours`);
+      console.log();
+      process.exit(0);
+    } else {
+      console.error(pc.red(`Unknown cache action: ${action}`));
+      console.error(pc.dim("Available actions: clear, stats"));
+      process.exit(1);
+    }
+  });
+
 // TikTok command
 program
   .command("tiktok <username>")
   .alias("tt")
   .description("Check if username is taken on TikTok")
   .option("--json", "Output as JSON")
-  .action(async (username: string, options: { json?: boolean }) => {
+  .option("--no-cache", "Skip cache")
+  .action(async (username: string, options: { json?: boolean; cache?: boolean }) => {
+    if (options.cache === false) setCacheEnabled(false);
     await handleSingleProvider("tiktok", username, options.json ?? false);
   });
 
@@ -152,7 +194,9 @@ program
   .alias("ig")
   .description("Check if username is taken on Instagram")
   .option("--json", "Output as JSON")
-  .action(async (username: string, options: { json?: boolean }) => {
+  .option("--no-cache", "Skip cache")
+  .action(async (username: string, options: { json?: boolean; cache?: boolean }) => {
+    if (options.cache === false) setCacheEnabled(false);
     await handleSingleProvider("instagram", username, options.json ?? false);
   });
 
@@ -162,7 +206,9 @@ program
   .alias("twitter")
   .description("Check if username is taken on X/Twitter")
   .option("--json", "Output as JSON")
-  .action(async (username: string, options: { json?: boolean }) => {
+  .option("--no-cache", "Skip cache")
+  .action(async (username: string, options: { json?: boolean; cache?: boolean }) => {
+    if (options.cache === false) setCacheEnabled(false);
     await handleSingleProvider("x", username, options.json ?? false);
   });
 
@@ -171,7 +217,9 @@ program
   .command("threads <username>")
   .description("Check if username is taken on Threads")
   .option("--json", "Output as JSON")
-  .action(async (username: string, options: { json?: boolean }) => {
+  .option("--no-cache", "Skip cache")
+  .action(async (username: string, options: { json?: boolean; cache?: boolean }) => {
+    if (options.cache === false) setCacheEnabled(false);
     await handleSingleProvider("threads", username, options.json ?? false);
   });
 
@@ -181,7 +229,9 @@ program
   .alias("yt")
   .description("Check if username is taken on YouTube")
   .option("--json", "Output as JSON")
-  .action(async (username: string, options: { json?: boolean }) => {
+  .option("--no-cache", "Skip cache")
+  .action(async (username: string, options: { json?: boolean; cache?: boolean }) => {
+    if (options.cache === false) setCacheEnabled(false);
     await handleSingleProvider("youtube", username, options.json ?? false);
   });
 

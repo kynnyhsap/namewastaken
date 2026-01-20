@@ -9,6 +9,8 @@
   "scripts": {
     "start": "bun run ./src/index.ts",
     "dev": "bun --watch run ./src/index.ts",
+    "build": "bun build ./src/index.ts --compile --outfile=dist/namewastaken",
+    "install:global": "bun run build && cp dist/namewastaken /usr/local/bin/namewastaken",
     "test": "bun test",
     "test:integration": "bun test src/__tests__/integration.test.ts"
   },
