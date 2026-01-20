@@ -46,7 +46,9 @@ ${pc.bold("  Options:")}
 
 ${pc.bold("  Commands:")}
 
-    ${pc.cyan("mcp")}                            ${pc.dim("Start MCP server")}
+    ${pc.cyan("mcp")}                            ${pc.dim("Start MCP server (Streamable HTTP)")}
+    ${pc.cyan("mcp --stdio")}                    ${pc.dim("Start MCP server (STDIO)")}
+    ${pc.cyan("mcp --sse")}                      ${pc.dim("Start MCP server (SSE, legacy)")}
     ${pc.cyan("cache clear")}                    ${pc.dim("Clear the cache")}
     ${pc.cyan("cache stats")}                    ${pc.dim("Show cache statistics")}
 
@@ -242,10 +244,20 @@ program
 program
   .command("mcp")
   .description("Start MCP server for AI assistants")
-  .option("-p, --port <port>", "Port to run server on", "3000")
-  .action(async (options: { port: string }) => {
-    const { startMcpServer } = await import("./mcp");
-    await startMcpServer({ port: parseInt(options.port, 10) });
+  .option("-p, --port <port>", "Port to run HTTP server on", "3000")
+  .option("--stdio", "Use STDIO transport")
+  .option("--sse", "Use SSE transport (legacy)")
+  .action(async (options: { port: string; stdio?: boolean; sse?: boolean }) => {
+    if (options.stdio) {
+      const { startStdioServer } = await import("./mcp");
+      await startStdioServer();
+    } else if (options.sse) {
+      const { startMcpServer } = await import("./mcp");
+      await startMcpServer({ port: parseInt(options.port, 10) });
+    } else {
+      const { startHttpServer } = await import("./mcp");
+      await startHttpServer({ port: parseInt(options.port, 10) });
+    }
   });
 
 // Cache command
