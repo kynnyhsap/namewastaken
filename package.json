@@ -65,11 +65,12 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@hono/mcp": "^0.2.3",
+    "@hono/node-server": "^1.19.9",
     "@modelcontextprotocol/sdk": "^1.25.3",
     "commander": "^12.1.0",
     "effect": "^3.12.5",
-    "elysia": "^1.4.22",
-    "elysia-mcp": "^0.1.0",
+    "hono": "^4.11.4",
     "picocolors": "^1.1.1",
     "zod": "4"
   }
