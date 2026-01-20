@@ -3,7 +3,6 @@ import { program } from "commander";
 import { Effect } from "effect";
 import pc from "picocolors";
 
-import { setCacheEnabled, clearCache, getCacheStats } from "./lib/cache";
 import {
   checkAll,
   checkSingle,
@@ -41,12 +40,13 @@ ${pc.bold("  Platforms:")}
     ${pc.magenta("threads")}              Threads
     ${pc.magenta("youtube")}    ${pc.dim("yt")}        YouTube
     ${pc.magenta("instagram")}  ${pc.dim("ig")}        Instagram
+    ${pc.magenta("facebook")}   ${pc.dim("fb")}        Facebook
+    ${pc.magenta("telegram")}   ${pc.dim("tg")}        Telegram
 
 ${pc.bold("  Options:")}
 
     ${pc.cyan("-p, --platforms <name>")}         ${pc.dim("Check specific platform(s)")}
     ${pc.cyan("--json")}                         ${pc.dim("Output results as JSON")}
-    ${pc.cyan("--no-cache")}                     ${pc.dim("Skip cache, fetch fresh results")}
     ${pc.cyan("-v, --version")}                  ${pc.dim("Show version number")}
     ${pc.cyan("-h, --help")}                     ${pc.dim("Show this help message")}
 
@@ -55,8 +55,6 @@ ${pc.bold("  Commands:")}
     ${pc.cyan("platforms")}                      ${pc.dim("List all supported platforms")}
     ${pc.cyan("mcp")}                            ${pc.dim("Start MCP server (STDIO)")}
     ${pc.cyan("mcp --http")}                     ${pc.dim("Start MCP server (HTTP)")}
-    ${pc.cyan("cache clear")}                    ${pc.dim("Clear the cache")}
-    ${pc.cyan("cache stats")}                    ${pc.dim("Show cache statistics")}
 
 ${pc.bold("  Examples:")}
 
@@ -211,66 +209,59 @@ program
   .argument("[inputs...]", "Username(s) or URL to check")
   .option("-p, --platforms <platforms>", "Check specific platform(s), comma-separated")
   .option("--json", "Output results as JSON")
-  .option("--no-cache", "Skip cache, fetch fresh results")
-  .action(
-    async (inputs: string[], options: { platforms?: string; json?: boolean; cache?: boolean }) => {
-      if (options.cache === false) {
-        setCacheEnabled(false);
-      }
+  .action(async (inputs: string[], options: { platforms?: string; json?: boolean }) => {
+    if (!inputs || inputs.length === 0) {
+      showHelp();
+      return;
+    }
 
-      if (!inputs || inputs.length === 0) {
-        showHelp();
-        return;
-      }
+    // If --platforms is provided, use it
+    if (options.platforms) {
+      const providerList = parsePlatformOption(options.platforms);
 
-      // If --platforms is provided, use it
-      if (options.platforms) {
-        const providerList = parsePlatformOption(options.platforms);
-
-        if (inputs.length === 1) {
-          const input = inputs[0];
-
-          // Single provider, single username
-          if (providerList.length === 1) {
-            await handleSingleProvider(providerList[0], input, options.json ?? false);
-          } else {
-            // Multiple providers, single username
-            await handleProviders(providerList, input, options.json ?? false);
-          }
-        } else {
-          // Multiple usernames with --platform - bulk mode for specific platforms
-          await handleBulkWithPlatforms(inputs, providerList, options.json ?? false);
-        }
-        return;
-      }
-
-      // Single input
       if (inputs.length === 1) {
         const input = inputs[0];
 
-        // Check if input is a URL
-        if (isUrl(input)) {
-          const parsed = parseUrl(input);
-          if (!parsed) {
-            console.error(pc.red("Error: Unsupported URL format"));
-            console.error(
-              pc.dim("Supported platforms: TikTok, Instagram, X/Twitter, Threads, YouTube"),
-            );
-            process.exit(1);
-          }
-          await handleSingleProvider(parsed.provider, parsed.username, options.json ?? false);
-          return;
+        // Single provider, single username
+        if (providerList.length === 1) {
+          await handleSingleProvider(providerList[0], input, options.json ?? false);
+        } else {
+          // Multiple providers, single username
+          await handleProviders(providerList, input, options.json ?? false);
         }
+      } else {
+        // Multiple usernames with --platform - bulk mode for specific platforms
+        await handleBulkWithPlatforms(inputs, providerList, options.json ?? false);
+      }
+      return;
+    }
 
-        // Single username - check all providers
-        await handleAllProviders(input, options.json ?? false);
+    // Single input
+    if (inputs.length === 1) {
+      const input = inputs[0];
+
+      // Check if input is a URL
+      if (isUrl(input)) {
+        const parsed = parseUrl(input);
+        if (!parsed) {
+          console.error(pc.red("Error: Unsupported URL format"));
+          console.error(
+            pc.dim("Supported platforms: TikTok, Instagram, X/Twitter, Threads, YouTube"),
+          );
+          process.exit(1);
+        }
+        await handleSingleProvider(parsed.provider, parsed.username, options.json ?? false);
         return;
       }
 
-      // Bulk mode - multiple usernames
-      await handleBulk(inputs, options.json ?? false);
-    },
-  );
+      // Single username - check all providers
+      await handleAllProviders(input, options.json ?? false);
+      return;
+    }
+
+    // Bulk mode - multiple usernames
+    await handleBulk(inputs, options.json ?? false);
+  });
 
 // MCP command
 program
@@ -300,33 +291,6 @@ program
     }
     console.log();
     process.exit(0);
-  });
-
-// Cache command
-program
-  .command("cache <action>")
-  .description("Manage the cache (clear, stats)")
-  .action((action: string) => {
-    if (action === "clear") {
-      clearCache();
-      console.log(pc.green("Cache cleared successfully"));
-      process.exit(0);
-    } else if (action === "stats") {
-      const stats = getCacheStats();
-      console.log(`
-${pc.bold("  Cache Statistics")}
-
-    ${pc.dim("Entries:")}     ${stats.entries}
-    ${pc.dim("Providers:")}   ${stats.providers.length > 0 ? stats.providers.join(", ") : "none"}
-    ${pc.dim("Location:")}    ~/.namewastaken/cache.json
-    ${pc.dim("TTL:")}         24 hours
-`);
-      process.exit(0);
-    } else {
-      console.error(pc.red(`Unknown cache action: ${action}`));
-      console.error(pc.dim("Available actions: clear, stats"));
-      process.exit(1);
-    }
   });
 
 program.parse();

@@ -29,7 +29,6 @@
 
 import { Effect } from "effect";
 
-import { setCacheEnabled } from "./lib/cache";
 import { checkSingle, checkAll, checkProviders } from "./lib/check";
 import {
   providers,
@@ -58,6 +57,7 @@ export type CheckResults = {
   youtube?: PlatformCheckResult;
   instagram?: PlatformCheckResult;
   facebook?: PlatformCheckResult;
+  telegram?: PlatformCheckResult;
 };
 
 /** Full check result with summary */
@@ -74,41 +74,23 @@ export type FullCheckResult = CheckResults & {
 export interface CheckOptions {
   /** Filter to specific platforms (e.g., ['tiktok', 'ig']) */
   platforms?: string[];
-  /** Whether to use cached results (default: true) */
-  cache?: boolean;
 }
 
 /** Platform checker interface (for single platform) */
 export interface PlatformChecker {
   /** Check if username is available */
-  available(username: string, options?: { cache?: boolean }): Promise<boolean>;
+  available(username: string): Promise<boolean>;
   /** Check if username is taken */
-  taken(username: string, options?: { cache?: boolean }): Promise<boolean>;
+  taken(username: string): Promise<boolean>;
   /** Get full check result for single username */
-  check(username: string, options?: { cache?: boolean }): Promise<PlatformCheckResult>;
+  check(username: string): Promise<PlatformCheckResult>;
   /** Check multiple usernames */
-  checkMany(
-    usernames: string[],
-    options?: { cache?: boolean },
-  ): Promise<Map<string, PlatformCheckResult>>;
+  checkMany(usernames: string[]): Promise<Map<string, PlatformCheckResult>>;
 }
 
 // ============================================================================
 // Internal helpers
 // ============================================================================
-
-async function runWithCache<T>(
-  options: CheckOptions | undefined,
-  fn: () => Promise<T>,
-): Promise<T> {
-  const useCache = options?.cache ?? true;
-  if (!useCache) setCacheEnabled(false);
-  try {
-    return await fn();
-  } finally {
-    setCacheEnabled(true);
-  }
-}
 
 function toResult(
   provider: Provider,
@@ -129,36 +111,29 @@ function toResult(
 // ============================================================================
 
 function createPlatformChecker(provider: Provider): PlatformChecker {
-  async function checkOne(username: string, options?: CheckOptions): Promise<PlatformCheckResult> {
-    return runWithCache(options, async () => {
-      const result = await Effect.runPromise(checkSingle(provider, username));
-      return toResult(provider, username, result.taken, result.error);
-    });
+  async function checkOne(username: string): Promise<PlatformCheckResult> {
+    const result = await Effect.runPromise(checkSingle(provider, username));
+    return toResult(provider, username, result.taken, result.error);
   }
 
-  async function checkMany(
-    usernames: string[],
-    options?: CheckOptions,
-  ): Promise<Map<string, PlatformCheckResult>> {
-    return runWithCache(options, async () => {
-      const results = new Map<string, PlatformCheckResult>();
-      const checks = usernames.map(async (username) => {
-        const result = await Effect.runPromise(checkSingle(provider, username));
-        results.set(username, toResult(provider, username, result.taken, result.error));
-      });
-      await Promise.all(checks);
-      return results;
+  async function checkMany(usernames: string[]): Promise<Map<string, PlatformCheckResult>> {
+    const results = new Map<string, PlatformCheckResult>();
+    const checks = usernames.map(async (username) => {
+      const result = await Effect.runPromise(checkSingle(provider, username));
+      results.set(username, toResult(provider, username, result.taken, result.error));
     });
+    await Promise.all(checks);
+    return results;
   }
 
   return {
-    async available(username: string, options?: CheckOptions): Promise<boolean> {
-      const result = await checkOne(username, options);
+    async available(username: string): Promise<boolean> {
+      const result = await checkOne(username);
       return result.available;
     },
 
-    async taken(username: string, options?: CheckOptions): Promise<boolean> {
-      const result = await checkOne(username, options);
+    async taken(username: string): Promise<boolean> {
+      const result = await checkOne(username);
       return result.taken;
     },
 
@@ -174,52 +149,46 @@ function createPlatformChecker(provider: Provider): PlatformChecker {
 async function checkOneAllPlatforms(
   username: string,
   providerList: Provider[],
-  options?: CheckOptions,
 ): Promise<FullCheckResult> {
-  return runWithCache(options, async () => {
-    const effect =
-      providerList.length === providers.length
-        ? checkAll(username)
-        : checkProviders(providerList, username);
+  const effect =
+    providerList.length === providers.length
+      ? checkAll(username)
+      : checkProviders(providerList, username);
 
-    const result = await Effect.runPromise(effect);
+  const result = await Effect.runPromise(effect);
 
-    const checkResults: Record<string, PlatformCheckResult> = {};
-    let available = 0;
-    let taken = 0;
-    let errors = 0;
+  const checkResults: Record<string, PlatformCheckResult> = {};
+  let available = 0;
+  let taken = 0;
+  let errors = 0;
 
-    for (const r of result.results) {
-      const platformResult = toResult(r.provider, username, r.taken, r.error);
-      checkResults[r.provider.name] = platformResult;
+  for (const r of result.results) {
+    const platformResult = toResult(r.provider, username, r.taken, r.error);
+    checkResults[r.provider.name] = platformResult;
 
-      if (r.error) errors++;
-      else if (r.taken) taken++;
-      else available++;
-    }
+    if (r.error) errors++;
+    else if (r.taken) taken++;
+    else available++;
+  }
 
-    return {
-      username,
-      ...checkResults,
-      summary: { available, taken, errors },
-    } as FullCheckResult;
-  });
+  return {
+    username,
+    ...checkResults,
+    summary: { available, taken, errors },
+  } as FullCheckResult;
 }
 
 async function checkManyAllPlatforms(
   usernames: string[],
   providerList: Provider[],
-  options?: CheckOptions,
 ): Promise<Map<string, FullCheckResult>> {
-  return runWithCache(options, async () => {
-    const results = new Map<string, FullCheckResult>();
-    const checks = usernames.map(async (username) => {
-      const result = await checkOneAllPlatforms(username, providerList, { cache: true });
-      results.set(username, result);
-    });
-    await Promise.all(checks);
-    return results;
+  const results = new Map<string, FullCheckResult>();
+  const checks = usernames.map(async (username) => {
+    const result = await checkOneAllPlatforms(username, providerList);
+    results.set(username, result);
   });
+  await Promise.all(checks);
+  return results;
 }
 
 // ============================================================================
@@ -278,6 +247,7 @@ const threads = createPlatformChecker(providers.find((p) => p.name === "threads"
 const youtube = createPlatformChecker(providers.find((p) => p.name === "youtube")!);
 const instagram = createPlatformChecker(providers.find((p) => p.name === "instagram")!);
 const facebook = createPlatformChecker(providers.find((p) => p.name === "facebook")!);
+const telegram = createPlatformChecker(providers.find((p) => p.name === "telegram")!);
 
 /**
  * Check username availability.
@@ -294,7 +264,7 @@ const facebook = createPlatformChecker(providers.find((p) => p.name === "faceboo
  */
 function check(username: string, options?: CheckOptions): Promise<FullCheckResult> {
   const providerList = resolveProviderList(options?.platforms);
-  return checkOneAllPlatforms(username, providerList, options);
+  return checkOneAllPlatforms(username, providerList);
 }
 
 /**
@@ -315,7 +285,7 @@ function checkMany(
   options?: CheckOptions,
 ): Promise<Map<string, FullCheckResult>> {
   const providerList = resolveProviderList(options?.platforms);
-  return checkManyAllPlatforms(usernames, providerList, options);
+  return checkManyAllPlatforms(usernames, providerList);
 }
 
 /**
@@ -329,7 +299,7 @@ function checkMany(
  */
 async function available(username: string, options?: CheckOptions): Promise<boolean> {
   const providerList = resolveProviderList(options?.platforms);
-  const result = await checkOneAllPlatforms(username, providerList, options);
+  const result = await checkOneAllPlatforms(username, providerList);
   return result.summary.available === providerList.length;
 }
 
@@ -344,7 +314,7 @@ async function available(username: string, options?: CheckOptions): Promise<bool
  */
 async function taken(username: string, options?: CheckOptions): Promise<boolean> {
   const providerList = resolveProviderList(options?.platforms);
-  const result = await checkOneAllPlatforms(username, providerList, options);
+  const result = await checkOneAllPlatforms(username, providerList);
   return result.summary.taken > 0;
 }
 
@@ -363,6 +333,7 @@ const nwt = {
   youtube,
   instagram,
   facebook,
+  telegram,
 
   // Utilities
   platforms,
@@ -372,4 +343,16 @@ const nwt = {
 export default nwt;
 
 // Named exports for convenience
-export { check, checkMany, available, taken, x, tiktok, threads, youtube, instagram, facebook };
+export {
+  check,
+  checkMany,
+  available,
+  taken,
+  x,
+  tiktok,
+  threads,
+  youtube,
+  instagram,
+  facebook,
+  telegram,
+};
