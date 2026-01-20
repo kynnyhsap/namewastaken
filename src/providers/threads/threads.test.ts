@@ -1,6 +1,6 @@
 import { describe, test, expect, mock, afterEach } from "bun:test";
 import { Effect } from "effect";
-import { checkThreads } from "./threads";
+import { threads } from "./threads";
 
 describe("Threads provider", () => {
   const originalFetch = globalThis.fetch;
@@ -17,7 +17,7 @@ describe("Threads provider", () => {
 
     globalThis.fetch = mock(() => Promise.resolve(mockResponse));
 
-    const result = await Effect.runPromise(checkThreads("testuser"));
+    const result = await Effect.runPromise(threads.check("testuser"));
     expect(result).toBe(true);
   });
 
@@ -29,7 +29,7 @@ describe("Threads provider", () => {
 
     globalThis.fetch = mock(() => Promise.resolve(mockResponse));
 
-    const result = await Effect.runPromise(checkThreads("testuser"));
+    const result = await Effect.runPromise(threads.check("testuser"));
     expect(result).toBe(false);
   });
 
@@ -47,7 +47,7 @@ describe("Threads provider", () => {
       return Promise.resolve(mockResponse);
     });
 
-    const result = await Effect.runPromise(checkThreads("testuser"));
+    const result = await Effect.runPromise(threads.check("testuser"));
     expect(result).toBe(true);
     expect(attempts).toBe(3);
   });
@@ -57,7 +57,7 @@ describe("Threads provider", () => {
       return Promise.reject(new Error("Network error"));
     });
 
-    const result = await Effect.runPromiseExit(checkThreads("testuser"));
+    const result = await Effect.runPromiseExit(threads.check("testuser"));
     expect(result._tag).toBe("Failure");
   });
 
@@ -73,7 +73,21 @@ describe("Threads provider", () => {
       return Promise.resolve(mockResponse);
     });
 
-    await Effect.runPromise(checkThreads("myusername"));
+    await Effect.runPromise(threads.check("myusername"));
     expect(calledUrl).toBe("https://www.threads.com/@myusername");
+  });
+
+  test("profileUrl generates correct URL", () => {
+    expect(threads.profileUrl("testuser")).toBe("https://threads.net/@testuser");
+  });
+
+  test("parseUrl extracts username from Threads URL", () => {
+    expect(threads.parseUrl("https://threads.net/@testuser")).toBe("testuser");
+    expect(threads.parseUrl("https://www.threads.net/@TestUser")).toBe("testuser");
+    expect(threads.parseUrl("https://threads.com/@testuser")).toBe("testuser");
+  });
+
+  test("parseUrl returns null for non-Threads URL", () => {
+    expect(threads.parseUrl("https://instagram.com/testuser")).toBeNull();
   });
 });

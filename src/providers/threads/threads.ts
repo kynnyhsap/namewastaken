@@ -1,12 +1,11 @@
-import { Effect, Schedule, Data } from "effect";
+import { Effect, Schedule } from "effect";
+import { Provider, ProviderCheckError } from "../types";
 
 const TIMEOUT_MS = 10000;
 
-export class ThreadsCheckError extends Data.TaggedError("ThreadsCheckError")<{
-  reason: string;
-}> {}
+const URL_PATTERN = /^https?:\/\/(?:www\.)?threads\.(?:net|com)\/@([a-zA-Z0-9._]+)/;
 
-export const checkThreads = (username: string) =>
+const check = (username: string) =>
   Effect.tryPromise({
     try: async () => {
       // Use threads.com directly (threads.net just redirects there)
@@ -27,7 +26,8 @@ export const checkThreads = (username: string) =>
       return !isLoginPage;
     },
     catch: (error) =>
-      new ThreadsCheckError({
+      new ProviderCheckError({
+        provider: "threads",
         reason: error instanceof Error ? error.message : "Network error",
       }),
   }).pipe(
@@ -35,3 +35,15 @@ export const checkThreads = (username: string) =>
       Schedule.exponential("100 millis").pipe(Schedule.compose(Schedule.recurs(3)))
     )
   );
+
+export const threads: Provider = {
+  name: "threads",
+  displayName: "Threads",
+  aliases: ["threads"],
+  check,
+  profileUrl: (username) => `https://threads.net/@${username}`,
+  parseUrl: (url) => {
+    const match = url.match(URL_PATTERN);
+    return match?.[1]?.toLowerCase() ?? null;
+  },
+};

@@ -1,1 +1,1 @@
-export { checkTikTok, TikTokCheckError } from "./tiktok";
+export { tiktok } from "./tiktok";

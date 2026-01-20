@@ -1,14 +1,9 @@
 import { Effect } from "effect";
-import {
-  type ProviderName,
-  type CheckError,
-  ALL_PROVIDERS,
-  getProviderChecker,
-} from "../providers";
+import { providers, type Provider, ProviderCheckError } from "../providers";
 import { getCached, setCache } from "./cache";
 
 export interface CheckResult {
-  provider: ProviderName;
+  provider: Provider;
   taken: boolean;
   error?: string;
   cached?: boolean;
@@ -23,24 +18,22 @@ export interface CheckAllResult {
  * Check a single provider for a username
  */
 export function checkSingle(
-  provider: ProviderName,
+  provider: Provider,
   username: string
 ): Effect.Effect<CheckResult, never> {
   // Check cache first
-  const cached = getCached(provider, username);
+  const cached = getCached(provider.name, username);
   if (cached !== null) {
     return Effect.succeed({ provider, taken: cached, cached: true });
   }
 
-  const checker = getProviderChecker(provider);
-
-  return checker(username).pipe(
+  return provider.check(username).pipe(
     Effect.map((taken) => {
       // Store in cache
-      setCache(provider, username, taken);
+      setCache(provider.name, username, taken);
       return { provider, taken };
     }),
-    Effect.catchAll((error: CheckError) =>
+    Effect.catchAll((error: ProviderCheckError) =>
       Effect.succeed({
         provider,
         taken: false,
@@ -54,7 +47,7 @@ export function checkSingle(
  * Check all providers for a username concurrently
  */
 export function checkAll(username: string): Effect.Effect<CheckAllResult, never> {
-  const checks = ALL_PROVIDERS.map((provider) => checkSingle(provider, username));
+  const checks = providers.map((provider) => checkSingle(provider, username));
 
   return Effect.all(checks, { concurrency: "unbounded" }).pipe(
     Effect.map((results) => ({
@@ -68,10 +61,10 @@ export function checkAll(username: string): Effect.Effect<CheckAllResult, never>
  * Check specific providers for a username concurrently
  */
 export function checkProviders(
-  providers: ProviderName[],
+  providerList: Provider[],
   username: string
 ): Effect.Effect<CheckAllResult, never> {
-  const checks = providers.map((provider) => checkSingle(provider, username));
+  const checks = providerList.map((provider) => checkSingle(provider, username));
 
   return Effect.all(checks, { concurrency: "unbounded" }).pipe(
     Effect.map((results) => ({

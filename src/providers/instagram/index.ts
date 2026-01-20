@@ -1,1 +1,1 @@
-export { checkInstagram, InstagramCheckError } from "./instagram";
+export { instagram } from "./instagram";

@@ -1,83 +1,53 @@
-import { Effect } from "effect";
-import { checkTikTok, TikTokCheckError } from "./tiktok";
-import { checkInstagram, InstagramCheckError } from "./instagram";
-import { checkX, XCheckError } from "./x";
-import { checkThreads, ThreadsCheckError } from "./threads";
-import { checkYouTube, YouTubeCheckError } from "./youtube";
+import { tiktok } from "./tiktok";
+import { instagram } from "./instagram";
+import { x } from "./x";
+import { threads } from "./threads";
+import { youtube } from "./youtube";
+import type { Provider } from "./types";
 
-export type ProviderName = "tiktok" | "instagram" | "x" | "threads" | "youtube";
+export type { Provider } from "./types";
+export { ProviderCheckError } from "./types";
 
-export type CheckError =
-  | TikTokCheckError
-  | InstagramCheckError
-  | XCheckError
-  | ThreadsCheckError
-  | YouTubeCheckError;
+/** All registered providers */
+export const providers: Provider[] = [x, tiktok, threads, youtube, instagram];
 
-export const PROVIDER_ALIASES: Record<string, ProviderName> = {
-  // TikTok
-  tiktok: "tiktok",
-  tt: "tiktok",
-  // Instagram
-  instagram: "instagram",
-  ig: "instagram",
-  // X/Twitter
-  x: "x",
-  twitter: "x",
-  // Threads
-  threads: "threads",
-  // YouTube
-  youtube: "youtube",
-  yt: "youtube",
-};
+/** Map of provider name to provider */
+const providersByName = new Map(providers.map((p) => [p.name, p]));
 
-// Sorted by provider name length
-export const ALL_PROVIDERS: ProviderName[] = [
-  "x",
-  "tiktok",
-  "threads",
-  "youtube",
-  "instagram",
-];
+/** Map of alias to provider */
+const providersByAlias = new Map(
+  providers.flatMap((p) => p.aliases.map((alias) => [alias, p]))
+);
 
-export const PROVIDER_DISPLAY_NAMES: Record<ProviderName, string> = {
-  tiktok: "TikTok",
-  instagram: "Instagram",
-  x: "X/Twitter",
-  threads: "Threads",
-  youtube: "YouTube",
-};
-
-export function resolveProvider(alias: string): ProviderName | null {
-  return PROVIDER_ALIASES[alias.toLowerCase()] ?? null;
+/** Get provider by name */
+export function getProvider(name: string): Provider | undefined {
+  return providersByName.get(name);
 }
 
-export function getProviderChecker(
-  provider: ProviderName
-): (username: string) => Effect.Effect<boolean, CheckError> {
-  switch (provider) {
-    case "tiktok":
-      return checkTikTok;
-    case "instagram":
-      return checkInstagram;
-    case "x":
-      return checkX;
-    case "threads":
-      return checkThreads;
-    case "youtube":
-      return checkYouTube;
+/** Resolve provider from name or alias */
+export function resolveProvider(nameOrAlias: string): Provider | undefined {
+  return providersByAlias.get(nameOrAlias.toLowerCase());
+}
+
+/** Parse a URL and return the matching provider and username */
+export function parseUrl(url: string): { provider: Provider; username: string } | null {
+  for (const provider of providers) {
+    const username = provider.parseUrl(url);
+    if (username) {
+      return { provider, username };
+    }
   }
+  return null;
 }
 
-export {
-  checkTikTok,
-  checkInstagram,
-  checkX,
-  checkThreads,
-  checkYouTube,
-  TikTokCheckError,
-  InstagramCheckError,
-  XCheckError,
-  ThreadsCheckError,
-  YouTubeCheckError,
-};
+/** Check if a string is a URL */
+export function isUrl(input: string): boolean {
+  return input.startsWith("http://") || input.startsWith("https://");
+}
+
+// Re-export individual providers for convenience
+export { tiktok } from "./tiktok";
+export { instagram } from "./instagram";
+export { x } from "./x";
+export { threads } from "./threads";
+export { youtube } from "./youtube";

@@ -1,12 +1,14 @@
-import { Effect, Schedule, Data } from "effect";
+import { Effect, Schedule } from "effect";
+import { Provider, ProviderCheckError } from "../types";
 
 const TIMEOUT_MS = 5000;
 
-export class XCheckError extends Data.TaggedError("XCheckError")<{
-  reason: string;
-}> {}
+const URL_PATTERNS = [
+  /^https?:\/\/(?:www\.)?x\.com\/([a-zA-Z0-9._]+)/,
+  /^https?:\/\/(?:www\.)?twitter\.com\/([a-zA-Z0-9._]+)/,
+];
 
-export const checkX = (username: string) =>
+const check = (username: string) =>
   Effect.tryPromise({
     try: async () => {
       const controller = new AbortController();
@@ -28,7 +30,8 @@ export const checkX = (username: string) =>
       }
     },
     catch: (error) =>
-      new XCheckError({
+      new ProviderCheckError({
+        provider: "x",
         reason: error instanceof Error ? error.message : "Network error",
       }),
   }).pipe(
@@ -36,3 +39,20 @@ export const checkX = (username: string) =>
       Schedule.exponential("100 millis").pipe(Schedule.compose(Schedule.recurs(3)))
     )
   );
+
+export const x: Provider = {
+  name: "x",
+  displayName: "X/Twitter",
+  aliases: ["x", "twitter"],
+  check,
+  profileUrl: (username) => `https://x.com/${username}`,
+  parseUrl: (url) => {
+    for (const pattern of URL_PATTERNS) {
+      const match = url.match(pattern);
+      if (match?.[1]) {
+        return match[1].toLowerCase();
+      }
+    }
+    return null;
+  },
+};

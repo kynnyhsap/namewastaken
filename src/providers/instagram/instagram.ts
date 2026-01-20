@@ -1,12 +1,11 @@
-import { Effect, Schedule, Data } from "effect";
+import { Effect, Schedule } from "effect";
+import { Provider, ProviderCheckError } from "../types";
 
 const TIMEOUT_MS = 5000;
 
-export class InstagramCheckError extends Data.TaggedError("InstagramCheckError")<{
-  reason: string;
-}> {}
+const URL_PATTERN = /^https?:\/\/(?:www\.)?instagram\.com\/([a-zA-Z0-9._]+)/;
 
-export const checkInstagram = (username: string) =>
+const check = (username: string) =>
   Effect.tryPromise({
     try: async () => {
       const controller = new AbortController();
@@ -23,7 +22,8 @@ export const checkInstagram = (username: string) =>
       }
     },
     catch: (error) =>
-      new InstagramCheckError({
+      new ProviderCheckError({
+        provider: "instagram",
         reason: error instanceof Error ? error.message : "Network error",
       }),
   }).pipe(
@@ -31,3 +31,15 @@ export const checkInstagram = (username: string) =>
       Schedule.exponential("100 millis").pipe(Schedule.compose(Schedule.recurs(3)))
     )
   );
+
+export const instagram: Provider = {
+  name: "instagram",
+  displayName: "Instagram",
+  aliases: ["instagram", "ig"],
+  check,
+  profileUrl: (username) => `https://instagram.com/${username}`,
+  parseUrl: (url) => {
+    const match = url.match(URL_PATTERN);
+    return match?.[1]?.toLowerCase() ?? null;
+  },
+};

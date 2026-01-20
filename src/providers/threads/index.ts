@@ -1,1 +1,1 @@
-export { checkThreads, ThreadsCheckError } from "./threads";
+export { threads } from "./threads";

@@ -1,6 +1,6 @@
 import { describe, test, expect, mock, afterEach } from "bun:test";
 import { Effect } from "effect";
-import { checkYouTube } from "./youtube";
+import { youtube } from "./youtube";
 
 describe("YouTube provider", () => {
   const originalFetch = globalThis.fetch;
@@ -14,7 +14,7 @@ describe("YouTube provider", () => {
       Promise.resolve(new Response("Channel page", { status: 200 }))
     );
 
-    const result = await Effect.runPromise(checkYouTube("testuser"));
+    const result = await Effect.runPromise(youtube.check("testuser"));
     expect(result).toBe(true);
   });
 
@@ -23,7 +23,7 @@ describe("YouTube provider", () => {
       Promise.resolve(new Response("Not found", { status: 404 }))
     );
 
-    const result = await Effect.runPromise(checkYouTube("testuser"));
+    const result = await Effect.runPromise(youtube.check("testuser"));
     expect(result).toBe(false);
   });
 
@@ -32,7 +32,7 @@ describe("YouTube provider", () => {
       Promise.resolve(new Response("", { status: 302 }))
     );
 
-    const result = await Effect.runPromise(checkYouTube("testuser"));
+    const result = await Effect.runPromise(youtube.check("testuser"));
     expect(result).toBe(true);
   });
 
@@ -46,7 +46,7 @@ describe("YouTube provider", () => {
       return Promise.resolve(new Response("Channel", { status: 200 }));
     });
 
-    const result = await Effect.runPromise(checkYouTube("testuser"));
+    const result = await Effect.runPromise(youtube.check("testuser"));
     expect(result).toBe(true);
     expect(attempts).toBe(3);
   });
@@ -56,7 +56,7 @@ describe("YouTube provider", () => {
       return Promise.reject(new Error("Network error"));
     });
 
-    const result = await Effect.runPromiseExit(checkYouTube("testuser"));
+    const result = await Effect.runPromiseExit(youtube.check("testuser"));
     expect(result._tag).toBe("Failure");
   });
 
@@ -67,7 +67,20 @@ describe("YouTube provider", () => {
       return Promise.resolve(new Response("", { status: 200 }));
     });
 
-    await Effect.runPromise(checkYouTube("myusername"));
+    await Effect.runPromise(youtube.check("myusername"));
     expect(calledUrl).toBe("https://www.youtube.com/@myusername");
+  });
+
+  test("profileUrl generates correct URL", () => {
+    expect(youtube.profileUrl("testuser")).toBe("https://youtube.com/@testuser");
+  });
+
+  test("parseUrl extracts username from YouTube URL", () => {
+    expect(youtube.parseUrl("https://youtube.com/@testuser")).toBe("testuser");
+    expect(youtube.parseUrl("https://www.youtube.com/@TestUser")).toBe("testuser");
+  });
+
+  test("parseUrl returns null for non-YouTube URL", () => {
+    expect(youtube.parseUrl("https://instagram.com/testuser")).toBeNull();
   });
 });

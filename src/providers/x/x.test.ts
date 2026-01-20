@@ -1,6 +1,6 @@
 import { describe, test, expect, mock, afterEach } from "bun:test";
 import { Effect } from "effect";
-import { checkX } from "./x";
+import { x } from "./x";
 
 describe("X/Twitter provider", () => {
   const originalFetch = globalThis.fetch;
@@ -14,7 +14,7 @@ describe("X/Twitter provider", () => {
       Promise.resolve(new Response("Profile page content"))
     );
 
-    const result = await Effect.runPromise(checkX("testuser"));
+    const result = await Effect.runPromise(x.check("testuser"));
     expect(result).toBe(true);
   });
 
@@ -23,7 +23,7 @@ describe("X/Twitter provider", () => {
       Promise.resolve(new Response("This account doesn't exist"))
     );
 
-    const result = await Effect.runPromise(checkX("testuser"));
+    const result = await Effect.runPromise(x.check("testuser"));
     expect(result).toBe(false);
   });
 
@@ -37,7 +37,7 @@ describe("X/Twitter provider", () => {
       return Promise.resolve(new Response("Profile page"));
     });
 
-    const result = await Effect.runPromise(checkX("testuser"));
+    const result = await Effect.runPromise(x.check("testuser"));
     expect(result).toBe(true);
     expect(attempts).toBe(3);
   });
@@ -47,7 +47,7 @@ describe("X/Twitter provider", () => {
       return Promise.reject(new Error("Network error"));
     });
 
-    const result = await Effect.runPromiseExit(checkX("testuser"));
+    const result = await Effect.runPromiseExit(x.check("testuser"));
     expect(result._tag).toBe("Failure");
   });
 
@@ -61,8 +61,26 @@ describe("X/Twitter provider", () => {
       return Promise.resolve(new Response(""));
     });
 
-    await Effect.runPromise(checkX("myusername"));
+    await Effect.runPromise(x.check("myusername"));
     expect(calledUrl).toBe("https://x.com/myusername");
     expect(calledHeaders["User-Agent"]).toBeDefined();
+  });
+
+  test("profileUrl generates correct URL", () => {
+    expect(x.profileUrl("testuser")).toBe("https://x.com/testuser");
+  });
+
+  test("parseUrl extracts username from X URL", () => {
+    expect(x.parseUrl("https://x.com/testuser")).toBe("testuser");
+    expect(x.parseUrl("https://www.x.com/TestUser")).toBe("testuser");
+  });
+
+  test("parseUrl extracts username from Twitter URL", () => {
+    expect(x.parseUrl("https://twitter.com/testuser")).toBe("testuser");
+    expect(x.parseUrl("https://www.twitter.com/TestUser")).toBe("testuser");
+  });
+
+  test("parseUrl returns null for non-X/Twitter URL", () => {
+    expect(x.parseUrl("https://instagram.com/testuser")).toBeNull();
   });
 });

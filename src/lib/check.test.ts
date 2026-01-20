@@ -2,6 +2,7 @@ import { describe, test, expect, mock, beforeEach, afterEach } from "bun:test";
 import { Effect } from "effect";
 import { checkSingle, checkAll, checkProviders } from "./check";
 import { setCacheEnabled, clearCache } from "./cache";
+import { tiktok, instagram, youtube } from "../providers";
 
 describe("Check orchestration", () => {
   const originalFetch = globalThis.fetch;
@@ -23,11 +24,9 @@ describe("Check orchestration", () => {
         Promise.resolve(new Response(`"desc":"@testuser`))
       );
 
-      const result = await Effect.runPromise(checkSingle("tiktok", "testuser"));
-      expect(result).toEqual({
-        provider: "tiktok",
-        taken: true,
-      });
+      const result = await Effect.runPromise(checkSingle(tiktok, "testuser"));
+      expect(result.provider).toBe(tiktok);
+      expect(result.taken).toBe(true);
     });
 
     test("returns result for available username", async () => {
@@ -35,11 +34,9 @@ describe("Check orchestration", () => {
         Promise.resolve(new Response("Not found"))
       );
 
-      const result = await Effect.runPromise(checkSingle("tiktok", "testuser"));
-      expect(result).toEqual({
-        provider: "tiktok",
-        taken: false,
-      });
+      const result = await Effect.runPromise(checkSingle(tiktok, "testuser"));
+      expect(result.provider).toBe(tiktok);
+      expect(result.taken).toBe(false);
     });
 
     test("returns error result on network failure", async () => {
@@ -47,8 +44,8 @@ describe("Check orchestration", () => {
         Promise.reject(new Error("Network error"))
       );
 
-      const result = await Effect.runPromise(checkSingle("tiktok", "testuser"));
-      expect(result.provider).toBe("tiktok");
+      const result = await Effect.runPromise(checkSingle(tiktok, "testuser"));
+      expect(result.provider).toBe(tiktok);
       expect(result.taken).toBe(false);
       expect(result.error).toBeDefined();
     });
@@ -66,7 +63,7 @@ describe("Check orchestration", () => {
 
       expect(result.username).toBe("testuser");
       expect(result.results).toHaveLength(5);
-      expect(result.results.map((r) => r.provider).sort()).toEqual([
+      expect(result.results.map((r) => r.provider.name).sort()).toEqual([
         "instagram",
         "threads",
         "tiktok",
@@ -91,12 +88,12 @@ describe("Check orchestration", () => {
 
       const result = await Effect.runPromise(checkAll("testuser"));
 
-      const tiktokResult = result.results.find((r) => r.provider === "tiktok");
+      const tiktokResult = result.results.find((r) => r.provider.name === "tiktok");
       const instagramResult = result.results.find(
-        (r) => r.provider === "instagram"
+        (r) => r.provider.name === "instagram"
       );
       const youtubeResult = result.results.find(
-        (r) => r.provider === "youtube"
+        (r) => r.provider.name === "youtube"
       );
 
       expect(tiktokResult?.taken).toBe(true);
@@ -114,12 +111,12 @@ describe("Check orchestration", () => {
       });
 
       const result = await Effect.runPromise(
-        checkProviders(["tiktok", "instagram"], "testuser")
+        checkProviders([tiktok, instagram], "testuser")
       );
 
       expect(result.username).toBe("testuser");
       expect(result.results).toHaveLength(2);
-      expect(result.results.map((r) => r.provider).sort()).toEqual([
+      expect(result.results.map((r) => r.provider.name).sort()).toEqual([
         "instagram",
         "tiktok",
       ]);

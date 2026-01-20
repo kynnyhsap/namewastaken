@@ -1,1 +1,1 @@
-export { checkX, XCheckError } from "./x";
+export { x } from "./x";

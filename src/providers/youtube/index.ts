@@ -1,1 +1,1 @@
-export { checkYouTube, YouTubeCheckError } from "./youtube";
+export { youtube } from "./youtube";

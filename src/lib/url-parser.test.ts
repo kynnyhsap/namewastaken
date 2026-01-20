@@ -1,97 +1,84 @@
 import { describe, test, expect } from "bun:test";
-import { parseUrl, isUrl } from "./url-parser";
+import { parseUrl, isUrl, tiktok, instagram, x, threads, youtube } from "../providers";
 
 describe("URL parser", () => {
   describe("parseUrl", () => {
     test("parses TikTok URL", () => {
-      expect(parseUrl("https://tiktok.com/@username")).toEqual({
-        provider: "tiktok",
-        username: "username",
-      });
+      const result = parseUrl("https://tiktok.com/@username");
+      expect(result?.provider).toBe(tiktok);
+      expect(result?.username).toBe("username");
     });
 
     test("parses TikTok URL with www", () => {
-      expect(parseUrl("https://www.tiktok.com/@testuser")).toEqual({
-        provider: "tiktok",
-        username: "testuser",
-      });
+      const result = parseUrl("https://www.tiktok.com/@testuser");
+      expect(result?.provider).toBe(tiktok);
+      expect(result?.username).toBe("testuser");
     });
 
     test("parses Instagram URL", () => {
-      expect(parseUrl("https://instagram.com/username")).toEqual({
-        provider: "instagram",
-        username: "username",
-      });
+      const result = parseUrl("https://instagram.com/username");
+      expect(result?.provider).toBe(instagram);
+      expect(result?.username).toBe("username");
     });
 
     test("parses Instagram URL with www", () => {
-      expect(parseUrl("https://www.instagram.com/testuser")).toEqual({
-        provider: "instagram",
-        username: "testuser",
-      });
+      const result = parseUrl("https://www.instagram.com/testuser");
+      expect(result?.provider).toBe(instagram);
+      expect(result?.username).toBe("testuser");
     });
 
     test("parses X URL", () => {
-      expect(parseUrl("https://x.com/username")).toEqual({
-        provider: "x",
-        username: "username",
-      });
+      const result = parseUrl("https://x.com/username");
+      expect(result?.provider).toBe(x);
+      expect(result?.username).toBe("username");
     });
 
     test("parses Twitter URL (alias for X)", () => {
-      expect(parseUrl("https://twitter.com/username")).toEqual({
-        provider: "x",
-        username: "username",
-      });
+      const result = parseUrl("https://twitter.com/username");
+      expect(result?.provider).toBe(x);
+      expect(result?.username).toBe("username");
     });
 
     test("parses Threads URL", () => {
-      expect(parseUrl("https://threads.net/@username")).toEqual({
-        provider: "threads",
-        username: "username",
-      });
+      const result = parseUrl("https://threads.net/@username");
+      expect(result?.provider).toBe(threads);
+      expect(result?.username).toBe("username");
     });
 
     test("parses Threads URL with www", () => {
-      expect(parseUrl("https://www.threads.net/@testuser")).toEqual({
-        provider: "threads",
-        username: "testuser",
-      });
+      const result = parseUrl("https://www.threads.net/@testuser");
+      expect(result?.provider).toBe(threads);
+      expect(result?.username).toBe("testuser");
     });
 
     test("parses YouTube URL", () => {
-      expect(parseUrl("https://youtube.com/@username")).toEqual({
-        provider: "youtube",
-        username: "username",
-      });
+      const result = parseUrl("https://youtube.com/@username");
+      expect(result?.provider).toBe(youtube);
+      expect(result?.username).toBe("username");
     });
 
     test("parses YouTube URL with www", () => {
-      expect(parseUrl("https://www.youtube.com/@testuser")).toEqual({
-        provider: "youtube",
-        username: "testuser",
-      });
+      const result = parseUrl("https://www.youtube.com/@testuser");
+      expect(result?.provider).toBe(youtube);
+      expect(result?.username).toBe("testuser");
     });
 
     test("handles http URLs", () => {
-      expect(parseUrl("http://tiktok.com/@username")).toEqual({
-        provider: "tiktok",
-        username: "username",
-      });
+      const result = parseUrl("http://tiktok.com/@username");
+      expect(result?.provider).toBe(tiktok);
+      expect(result?.username).toBe("username");
     });
 
     test("converts username to lowercase", () => {
-      expect(parseUrl("https://tiktok.com/@UserName")).toEqual({
-        provider: "tiktok",
-        username: "username",
-      });
+      const result = parseUrl("https://tiktok.com/@UserName");
+      expect(result?.provider).toBe(tiktok);
+      expect(result?.username).toBe("username");
     });
 
     test("handles usernames with dots and underscores", () => {
-      expect(parseUrl("https://instagram.com/user.name_123")).toEqual({
-        provider: "instagram",
-        username: "user.name_123",
-      });
+      const result = parseUrl("https://instagram.com/user.name_123");
+      expect(result?.provider).toBe(instagram);
+      expect(result?.username).toBe("user.name_123");
     });
 
     test("returns null for unknown URL", () => {

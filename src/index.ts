@@ -4,15 +4,10 @@ import { Effect } from "effect";
 import pc from "picocolors";
 
 import { safeParseHandle } from "./schema";
-import { parseUrl, isUrl } from "./lib/url-parser";
 import { checkAll, checkSingle } from "./lib/check";
 import { formatTable, formatJson, formatSingleProviderResult } from "./lib/output";
 import { setCacheEnabled, clearCache, getCacheStats } from "./lib/cache";
-import {
-  resolveProvider,
-  PROVIDER_DISPLAY_NAMES,
-  type ProviderName,
-} from "./providers";
+import { providers, resolveProvider, parseUrl, isUrl, type Provider } from "./providers";
 
 const VERSION = "1.0.0";
 
@@ -64,7 +59,7 @@ function showHelp() {
 
 // Helper function to handle a single provider check
 async function handleSingleProvider(
-  provider: ProviderName,
+  provider: Provider,
   username: string,
   json: boolean
 ) {
@@ -140,7 +135,7 @@ program
     const maybeProvider = resolveProvider(input);
     if (maybeProvider) {
       // This means user typed just the provider name without a username
-      console.error(pc.red(`Error: Missing username for ${PROVIDER_DISPLAY_NAMES[maybeProvider]}`));
+      console.error(pc.red(`Error: Missing username for ${maybeProvider.displayName}`));
       console.error(pc.dim(`Usage: namewastaken ${input} <username>`));
       process.exit(1);
     }
@@ -176,63 +171,22 @@ program
     }
   });
 
-// TikTok command
-program
-  .command("tiktok <username>")
-  .alias("tt")
-  .description("Check if username is taken on TikTok")
-  .option("--json", "Output as JSON")
-  .option("--no-cache", "Skip cache")
-  .action(async (username: string, options: { json?: boolean; cache?: boolean }) => {
-    if (options.cache === false) setCacheEnabled(false);
-    await handleSingleProvider("tiktok", username, options.json ?? false);
-  });
+// Generate provider commands dynamically
+for (const provider of providers) {
+  const cmd = program
+    .command(`${provider.name} <username>`)
+    .description(`Check if username is taken on ${provider.displayName}`)
+    .option("--json", "Output as JSON")
+    .option("--no-cache", "Skip cache")
+    .action(async (username: string, options: { json?: boolean; cache?: boolean }) => {
+      if (options.cache === false) setCacheEnabled(false);
+      await handleSingleProvider(provider, username, options.json ?? false);
+    });
 
-// Instagram command
-program
-  .command("instagram <username>")
-  .alias("ig")
-  .description("Check if username is taken on Instagram")
-  .option("--json", "Output as JSON")
-  .option("--no-cache", "Skip cache")
-  .action(async (username: string, options: { json?: boolean; cache?: boolean }) => {
-    if (options.cache === false) setCacheEnabled(false);
-    await handleSingleProvider("instagram", username, options.json ?? false);
-  });
-
-// X/Twitter command
-program
-  .command("x <username>")
-  .alias("twitter")
-  .description("Check if username is taken on X/Twitter")
-  .option("--json", "Output as JSON")
-  .option("--no-cache", "Skip cache")
-  .action(async (username: string, options: { json?: boolean; cache?: boolean }) => {
-    if (options.cache === false) setCacheEnabled(false);
-    await handleSingleProvider("x", username, options.json ?? false);
-  });
-
-// Threads command
-program
-  .command("threads <username>")
-  .description("Check if username is taken on Threads")
-  .option("--json", "Output as JSON")
-  .option("--no-cache", "Skip cache")
-  .action(async (username: string, options: { json?: boolean; cache?: boolean }) => {
-    if (options.cache === false) setCacheEnabled(false);
-    await handleSingleProvider("threads", username, options.json ?? false);
-  });
-
-// YouTube command
-program
-  .command("youtube <username>")
-  .alias("yt")
-  .description("Check if username is taken on YouTube")
-  .option("--json", "Output as JSON")
-  .option("--no-cache", "Skip cache")
-  .action(async (username: string, options: { json?: boolean; cache?: boolean }) => {
-    if (options.cache === false) setCacheEnabled(false);
-    await handleSingleProvider("youtube", username, options.json ?? false);
-  });
+  // Add aliases (skip the first one which is the provider name itself)
+  for (const alias of provider.aliases.slice(1)) {
+    cmd.alias(alias);
+  }
+}
 
 program.parse();

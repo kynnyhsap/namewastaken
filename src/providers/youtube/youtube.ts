@@ -1,12 +1,11 @@
-import { Effect, Schedule, Data } from "effect";
+import { Effect, Schedule } from "effect";
+import { Provider, ProviderCheckError } from "../types";
 
 const TIMEOUT_MS = 5000;
 
-export class YouTubeCheckError extends Data.TaggedError("YouTubeCheckError")<{
-  reason: string;
-}> {}
+const URL_PATTERN = /^https?:\/\/(?:www\.)?youtube\.com\/@([a-zA-Z0-9._]+)/;
 
-export const checkYouTube = (username: string) =>
+const check = (username: string) =>
   Effect.tryPromise({
     try: async () => {
       const controller = new AbortController();
@@ -23,7 +22,8 @@ export const checkYouTube = (username: string) =>
       }
     },
     catch: (error) =>
-      new YouTubeCheckError({
+      new ProviderCheckError({
+        provider: "youtube",
         reason: error instanceof Error ? error.message : "Network error",
       }),
   }).pipe(
@@ -31,3 +31,15 @@ export const checkYouTube = (username: string) =>
       Schedule.exponential("100 millis").pipe(Schedule.compose(Schedule.recurs(3)))
     )
   );
+
+export const youtube: Provider = {
+  name: "youtube",
+  displayName: "YouTube",
+  aliases: ["youtube", "yt"],
+  check,
+  profileUrl: (username) => `https://youtube.com/@${username}`,
+  parseUrl: (url) => {
+    const match = url.match(URL_PATTERN);
+    return match?.[1]?.toLowerCase() ?? null;
+  },
+};

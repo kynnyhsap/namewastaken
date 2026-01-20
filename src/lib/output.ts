@@ -1,20 +1,12 @@
 import pc from "picocolors";
 import { type CheckResult, type CheckAllResult } from "./check";
-import { PROVIDER_DISPLAY_NAMES, type ProviderName } from "../providers";
-
-const PROVIDER_URLS: Record<ProviderName, (username: string) => string> = {
-  tiktok: (u) => `https://tiktok.com/@${u}`,
-  instagram: (u) => `https://instagram.com/${u}`,
-  x: (u) => `https://x.com/${u}`,
-  threads: (u) => `https://threads.net/@${u}`,
-  youtube: (u) => `https://youtube.com/@${u}`,
-};
+import type { Provider } from "../providers";
 
 /**
  * Format a single check result for display
  */
 export function formatSingleResult(result: CheckResult): string {
-  const displayName = PROVIDER_DISPLAY_NAMES[result.provider];
+  const displayName = result.provider.displayName;
 
   if (result.error) {
     return `${pc.yellow("?")} ${displayName}: ${pc.yellow(result.error)}`;
@@ -36,7 +28,7 @@ export function formatTable(checkResult: CheckAllResult): string {
   // Calculate column widths
   const platformWidth = Math.max(
     "Platform".length,
-    ...results.map((r) => PROVIDER_DISPLAY_NAMES[r.provider].length)
+    ...results.map((r) => r.provider.displayName.length)
   );
   const statusWidth = Math.max(
     "Status".length,
@@ -47,7 +39,7 @@ export function formatTable(checkResult: CheckAllResult): string {
   );
   const urlWidth = Math.max(
     "URL".length,
-    ...results.map((r) => PROVIDER_URLS[r.provider](username).length)
+    ...results.map((r) => r.provider.profileUrl(username).length)
   );
 
   const lines: string[] = [];
@@ -68,8 +60,8 @@ export function formatTable(checkResult: CheckAllResult): string {
 
   // Table rows
   for (const result of results) {
-    const displayName = PROVIDER_DISPLAY_NAMES[result.provider];
-    const url = PROVIDER_URLS[result.provider](username);
+    const displayName = result.provider.displayName;
+    const url = result.provider.profileUrl(username);
     let status: string;
 
     if (result.error) {
@@ -119,8 +111,8 @@ export function formatJson(checkResult: CheckAllResult): string {
     {
       username: checkResult.username,
       results: checkResult.results.map((r) => ({
-        provider: r.provider,
-        displayName: PROVIDER_DISPLAY_NAMES[r.provider],
+        provider: r.provider.name,
+        displayName: r.provider.displayName,
         taken: r.taken,
         available: !r.taken && !r.error,
         error: r.error ?? null,
@@ -135,7 +127,7 @@ export function formatJson(checkResult: CheckAllResult): string {
  * Format a single provider result
  */
 export function formatSingleProviderResult(
-  provider: ProviderName,
+  provider: Provider,
   username: string,
   result: CheckResult,
   asJson: boolean
@@ -144,8 +136,8 @@ export function formatSingleProviderResult(
     return JSON.stringify(
       {
         username,
-        provider,
-        displayName: PROVIDER_DISPLAY_NAMES[provider],
+        provider: provider.name,
+        displayName: provider.displayName,
         taken: result.taken,
         available: !result.taken && !result.error,
         error: result.error ?? null,
