@@ -48,6 +48,7 @@ ${pc.bold("  Options:")}
 
     ${pc.cyan("-p, --platforms <name>")}         ${pc.dim("Check specific platform(s)")}
     ${pc.cyan("--json")}                         ${pc.dim("Output results as JSON")}
+    ${pc.cyan("-q, --quiet")}                    ${pc.dim("No output, exit 0 if available")}
     ${pc.cyan("-v, --version")}                  ${pc.dim("Show version number")}
     ${pc.cyan("-h, --help")}                     ${pc.dim("Show this help message")}
 
@@ -70,10 +71,15 @@ function showHelp() {
   console.log(HELP);
 }
 
-async function handleSingleProvider(provider: Provider, username: string, json: boolean) {
+interface OutputOptions {
+  json?: boolean;
+  quiet?: boolean;
+}
+
+async function handleSingleProvider(provider: Provider, username: string, opts: OutputOptions) {
   const parsed = safeParseHandle(username);
   if (!parsed.success) {
-    console.error(pc.red(`Error: ${parsed.error.issues[0].message}`));
+    if (!opts.quiet) console.error(pc.red(`Error: ${parsed.error.issues[0].message}`));
     process.exit(1);
   }
 
@@ -81,14 +87,21 @@ async function handleSingleProvider(provider: Provider, username: string, json: 
   const result = await Effect.runPromise(checkSingle(provider, parsed.data));
   const durationMs = Math.round(performance.now() - start);
 
-  console.log(formatSingleProviderResult(provider, parsed.data, result, json, durationMs));
+  if (opts.quiet) {
+    // Exit 0 if available, 1 if taken
+    process.exit(result.taken ? 1 : 0);
+  }
+
+  console.log(
+    formatSingleProviderResult(provider, parsed.data, result, opts.json ?? false, durationMs),
+  );
   process.exit(0);
 }
 
-async function handleProviders(providerList: Provider[], username: string, json: boolean) {
+async function handleProviders(providerList: Provider[], username: string, opts: OutputOptions) {
   const parsed = safeParseHandle(username);
   if (!parsed.success) {
-    console.error(pc.red(`Error: ${parsed.error.issues[0].message}`));
+    if (!opts.quiet) console.error(pc.red(`Error: ${parsed.error.issues[0].message}`));
     process.exit(1);
   }
 
@@ -96,7 +109,13 @@ async function handleProviders(providerList: Provider[], username: string, json:
   const result = await Effect.runPromise(checkProviders(providerList, parsed.data));
   const durationMs = Math.round(performance.now() - start);
 
-  if (json) {
+  if (opts.quiet) {
+    // Exit 0 if available on ALL platforms, 1 if taken on ANY
+    const anyTaken = result.results.some((r) => r.taken);
+    process.exit(anyTaken ? 1 : 0);
+  }
+
+  if (opts.json) {
     console.log(formatJson(result, durationMs));
   } else {
     console.log(formatTable(result, durationMs));
@@ -104,10 +123,10 @@ async function handleProviders(providerList: Provider[], username: string, json:
   process.exit(0);
 }
 
-async function handleAllProviders(username: string, json: boolean) {
+async function handleAllProviders(username: string, opts: OutputOptions) {
   const parsed = safeParseHandle(username);
   if (!parsed.success) {
-    console.error(pc.red(`Error: ${parsed.error.issues[0].message}`));
+    if (!opts.quiet) console.error(pc.red(`Error: ${parsed.error.issues[0].message}`));
     process.exit(1);
   }
 
@@ -115,7 +134,13 @@ async function handleAllProviders(username: string, json: boolean) {
   const result = await Effect.runPromise(checkAll(parsed.data));
   const durationMs = Math.round(performance.now() - start);
 
-  if (json) {
+  if (opts.quiet) {
+    // Exit 0 if available on ALL platforms, 1 if taken on ANY
+    const anyTaken = result.results.some((r) => r.taken);
+    process.exit(anyTaken ? 1 : 0);
+  }
+
+  if (opts.json) {
     console.log(formatJson(result, durationMs));
   } else {
     console.log(formatTable(result, durationMs));
@@ -123,15 +148,17 @@ async function handleAllProviders(username: string, json: boolean) {
   process.exit(0);
 }
 
-async function handleBulk(usernames: string[], json: boolean) {
+async function handleBulk(usernames: string[], opts: OutputOptions) {
   const validUsernames: string[] = [];
 
   for (const username of usernames) {
     const parsed = safeParseHandle(username);
     if (!parsed.success) {
-      console.error(
-        pc.red(`Error: Invalid username "${username}": ${parsed.error.issues[0].message}`),
-      );
+      if (!opts.quiet) {
+        console.error(
+          pc.red(`Error: Invalid username "${username}": ${parsed.error.issues[0].message}`),
+        );
+      }
       process.exit(1);
     }
     validUsernames.push(parsed.data);
@@ -141,7 +168,13 @@ async function handleBulk(usernames: string[], json: boolean) {
   const results = await Effect.runPromise(checkBulk(validUsernames));
   const durationMs = Math.round(performance.now() - start);
 
-  if (json) {
+  if (opts.quiet) {
+    // Exit 0 if ALL usernames available on ALL platforms, 1 if any taken
+    const anyTaken = results.results.some((r) => r.results.some((pr) => pr.taken));
+    process.exit(anyTaken ? 1 : 0);
+  }
+
+  if (opts.json) {
     console.log(formatBulkJson(results, durationMs));
   } else {
     console.log(formatBulkTable(results, durationMs));
@@ -152,16 +185,18 @@ async function handleBulk(usernames: string[], json: boolean) {
 async function handleBulkWithPlatforms(
   usernames: string[],
   platformList: Provider[],
-  json: boolean,
+  opts: OutputOptions,
 ) {
   const validUsernames: string[] = [];
 
   for (const username of usernames) {
     const parsed = safeParseHandle(username);
     if (!parsed.success) {
-      console.error(
-        pc.red(`Error: Invalid username "${username}": ${parsed.error.issues[0].message}`),
-      );
+      if (!opts.quiet) {
+        console.error(
+          pc.red(`Error: Invalid username "${username}": ${parsed.error.issues[0].message}`),
+        );
+      }
       process.exit(1);
     }
     validUsernames.push(parsed.data);
@@ -171,7 +206,13 @@ async function handleBulkWithPlatforms(
   const results = await Effect.runPromise(checkBulkWithProviders(validUsernames, platformList));
   const durationMs = Math.round(performance.now() - start);
 
-  if (json) {
+  if (opts.quiet) {
+    // Exit 0 if ALL usernames available on ALL platforms, 1 if any taken
+    const anyTaken = results.results.some((r) => r.results.some((pr) => pr.taken));
+    process.exit(anyTaken ? 1 : 0);
+  }
+
+  if (opts.json) {
     console.log(formatBulkJson(results, durationMs));
   } else {
     console.log(formatBulkTable(results, durationMs, platformList));
@@ -210,59 +251,66 @@ program
   .argument("[inputs...]", "Username(s) or URL to check")
   .option("-p, --platforms <platforms>", "Check specific platform(s), comma-separated")
   .option("--json", "Output results as JSON")
-  .action(async (inputs: string[], options: { platforms?: string; json?: boolean }) => {
-    if (!inputs || inputs.length === 0) {
-      showHelp();
-      return;
-    }
+  .option("-q, --quiet", "No output, exit 0 if available, 1 if taken")
+  .action(
+    async (inputs: string[], options: { platforms?: string; json?: boolean; quiet?: boolean }) => {
+      const opts: OutputOptions = { json: options.json, quiet: options.quiet };
 
-    // If --platforms is provided, use it
-    if (options.platforms) {
-      const providerList = parsePlatformOption(options.platforms);
-
-      if (inputs.length === 1) {
-        const input = inputs[0];
-
-        // Single provider, single username
-        if (providerList.length === 1) {
-          await handleSingleProvider(providerList[0], input, options.json ?? false);
-        } else {
-          // Multiple providers, single username
-          await handleProviders(providerList, input, options.json ?? false);
-        }
-      } else {
-        // Multiple usernames with --platform - bulk mode for specific platforms
-        await handleBulkWithPlatforms(inputs, providerList, options.json ?? false);
-      }
-      return;
-    }
-
-    // Single input
-    if (inputs.length === 1) {
-      const input = inputs[0];
-
-      // Check if input is a URL
-      if (isUrl(input)) {
-        const parsed = parseUrl(input);
-        if (!parsed) {
-          console.error(pc.red("Error: Unsupported URL format"));
-          console.error(
-            pc.dim("Supported platforms: TikTok, Instagram, X/Twitter, Threads, YouTube"),
-          );
-          process.exit(1);
-        }
-        await handleSingleProvider(parsed.provider, parsed.username, options.json ?? false);
+      if (!inputs || inputs.length === 0) {
+        showHelp();
         return;
       }
 
-      // Single username - check all providers
-      await handleAllProviders(input, options.json ?? false);
-      return;
-    }
+      // If --platforms is provided, use it
+      if (options.platforms) {
+        const providerList = parsePlatformOption(options.platforms);
 
-    // Bulk mode - multiple usernames
-    await handleBulk(inputs, options.json ?? false);
-  });
+        if (inputs.length === 1) {
+          const input = inputs[0];
+
+          // Single provider, single username
+          if (providerList.length === 1) {
+            await handleSingleProvider(providerList[0], input, opts);
+          } else {
+            // Multiple providers, single username
+            await handleProviders(providerList, input, opts);
+          }
+        } else {
+          // Multiple usernames with --platform - bulk mode for specific platforms
+          await handleBulkWithPlatforms(inputs, providerList, opts);
+        }
+        return;
+      }
+
+      // Single input
+      if (inputs.length === 1) {
+        const input = inputs[0];
+
+        // Check if input is a URL
+        if (isUrl(input)) {
+          const parsed = parseUrl(input);
+          if (!parsed) {
+            if (!opts.quiet) {
+              console.error(pc.red("Error: Unsupported URL format"));
+              console.error(
+                pc.dim("Supported platforms: TikTok, Instagram, X/Twitter, Threads, YouTube"),
+              );
+            }
+            process.exit(1);
+          }
+          await handleSingleProvider(parsed.provider, parsed.username, opts);
+          return;
+        }
+
+        // Single username - check all providers
+        await handleAllProviders(input, opts);
+        return;
+      }
+
+      // Bulk mode - multiple usernames
+      await handleBulk(inputs, opts);
+    },
+  );
 
 // MCP command
 program

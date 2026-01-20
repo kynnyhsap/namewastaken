@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - GitHub platform provider (`github`, `gh`)
+- `--quiet` / `-q` flag for scripting (no output, exit 0 if available, 1 if taken)
 
 ### Fixed
 - Threads: Use `threads.com` instead of `threads.net` for profile URLs

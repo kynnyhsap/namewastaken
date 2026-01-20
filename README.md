@@ -45,12 +45,13 @@ namewastaken mrbeast --json
 
 ### CLI Options
 
-| Option              | Description                     |
-|---------------------|---------------------------------|
-| `-p, --platforms`   | Check specific platform(s)      |
-| `--json`            | Output results as JSON          |
-| `-v, --version`     | Show version number             |
-| `-h, --help`        | Show help message               |
+| Option              | Description                              |
+|---------------------|------------------------------------------|
+| `-p, --platforms`   | Check specific platform(s)               |
+| `--json`            | Output results as JSON                   |
+| `-q, --quiet`       | No output, exit 0 if available, 1 if taken |
+| `-v, --version`     | Show version number                      |
+| `-h, --help`        | Show help message                        |
 
 ### CLI Commands
 
