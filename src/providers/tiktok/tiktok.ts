@@ -27,9 +27,7 @@ const check = (username: string) =>
         reason: error instanceof Error ? error.message : "Network error",
       }),
   }).pipe(
-    Effect.retry(
-      Schedule.exponential("100 millis").pipe(Schedule.compose(Schedule.recurs(3)))
-    )
+    Effect.retry(Schedule.exponential("100 millis").pipe(Schedule.compose(Schedule.recurs(3)))),
   );
 
 export const tiktok: Provider = {

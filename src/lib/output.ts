@@ -28,18 +28,18 @@ export function formatTable(checkResult: CheckAllResult): string {
   // Calculate column widths
   const platformWidth = Math.max(
     "Platform".length,
-    ...results.map((r) => r.provider.displayName.length)
+    ...results.map((r) => r.provider.displayName.length),
   );
   const statusWidth = Math.max(
     "Status".length,
     ...results.map((r) => {
       if (r.error) return r.error.length + 2;
       return r.taken ? "x taken".length : "o available".length;
-    })
+    }),
   );
   const urlWidth = Math.max(
     "URL".length,
-    ...results.map((r) => r.provider.profileUrl(username).length)
+    ...results.map((r) => r.provider.profileUrl(username).length),
   );
 
   const lines: string[] = [];
@@ -48,15 +48,19 @@ export function formatTable(checkResult: CheckAllResult): string {
   lines.push(pc.bold(`\nChecking username: ${pc.cyan(username)}\n`));
 
   // Table top border
-  lines.push(`+${"-".repeat(platformWidth + 2)}+${"-".repeat(statusWidth + 2)}+${"-".repeat(urlWidth + 2)}+`);
+  lines.push(
+    `+${"-".repeat(platformWidth + 2)}+${"-".repeat(statusWidth + 2)}+${"-".repeat(urlWidth + 2)}+`,
+  );
 
   // Table header
   lines.push(
-    `| ${pc.bold("Platform".padEnd(platformWidth))} | ${pc.bold("Status".padEnd(statusWidth))} | ${pc.bold("URL".padEnd(urlWidth))} |`
+    `| ${pc.bold("Platform".padEnd(platformWidth))} | ${pc.bold("Status".padEnd(statusWidth))} | ${pc.bold("URL".padEnd(urlWidth))} |`,
   );
 
   // Header separator
-  lines.push(`+${"-".repeat(platformWidth + 2)}+${"-".repeat(statusWidth + 2)}+${"-".repeat(urlWidth + 2)}+`);
+  lines.push(
+    `+${"-".repeat(platformWidth + 2)}+${"-".repeat(statusWidth + 2)}+${"-".repeat(urlWidth + 2)}+`,
+  );
 
   // Table rows
   for (const result of results) {
@@ -80,12 +84,14 @@ export function formatTable(checkResult: CheckAllResult): string {
         : "o available";
 
     lines.push(
-      `| ${displayName.padEnd(platformWidth)} | ${status}${" ".repeat(statusWidth - visibleStatus.length)} | ${pc.dim(url.padEnd(urlWidth))} |`
+      `| ${displayName.padEnd(platformWidth)} | ${status}${" ".repeat(statusWidth - visibleStatus.length)} | ${pc.dim(url.padEnd(urlWidth))} |`,
     );
   }
 
   // Table bottom border
-  lines.push(`+${"-".repeat(platformWidth + 2)}+${"-".repeat(statusWidth + 2)}+${"-".repeat(urlWidth + 2)}+`);
+  lines.push(
+    `+${"-".repeat(platformWidth + 2)}+${"-".repeat(statusWidth + 2)}+${"-".repeat(urlWidth + 2)}+`,
+  );
 
   // Summary
   const available = results.filter((r) => !r.taken && !r.error).length;
@@ -93,8 +99,7 @@ export function formatTable(checkResult: CheckAllResult): string {
   const errors = results.filter((r) => r.error).length;
 
   const summaryParts: string[] = [];
-  if (available > 0)
-    summaryParts.push(pc.green(`${available} available`));
+  if (available > 0) summaryParts.push(pc.green(`${available} available`));
   if (taken > 0) summaryParts.push(pc.red(`${taken} taken`));
   if (errors > 0) summaryParts.push(pc.yellow(`${errors} errors`));
 
@@ -119,7 +124,7 @@ export function formatJson(checkResult: CheckAllResult): string {
       })),
     },
     null,
-    2
+    2,
   );
 }
 
@@ -130,7 +135,7 @@ export function formatSingleProviderResult(
   provider: Provider,
   username: string,
   result: CheckResult,
-  asJson: boolean
+  asJson: boolean,
 ): string {
   if (asJson) {
     return JSON.stringify(
@@ -143,7 +148,7 @@ export function formatSingleProviderResult(
         error: result.error ?? null,
       },
       null,
-      2
+      2,
     );
   }
 

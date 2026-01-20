@@ -4,10 +4,7 @@ export const HandleSchema = z
   .string()
   .min(1, "Username is required")
   .max(30, "Username is too long (max 30 characters)")
-  .regex(
-    /^[a-zA-Z0-9._]+$/,
-    "Username can only contain letters, numbers, dots and underscores"
-  )
+  .regex(/^[a-zA-Z0-9._]+$/, "Username can only contain letters, numbers, dots and underscores")
   .transform((val) => val.toLowerCase());
 
 export type Handle = z.infer<typeof HandleSchema>;

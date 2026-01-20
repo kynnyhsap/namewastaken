@@ -10,18 +10,14 @@ describe("X/Twitter provider", () => {
   });
 
   test("returns true when username is taken", async () => {
-    globalThis.fetch = mock(() =>
-      Promise.resolve(new Response("Profile page content"))
-    );
+    globalThis.fetch = mock(() => Promise.resolve(new Response("Profile page content")));
 
     const result = await Effect.runPromise(x.check("testuser"));
     expect(result).toBe(true);
   });
 
   test("returns false when username is available (account doesn't exist)", async () => {
-    globalThis.fetch = mock(() =>
-      Promise.resolve(new Response("This account doesn't exist"))
-    );
+    globalThis.fetch = mock(() => Promise.resolve(new Response("This account doesn't exist")));
 
     const result = await Effect.runPromise(x.check("testuser"));
     expect(result).toBe(false);

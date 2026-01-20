@@ -15,9 +15,7 @@ export const providers: Provider[] = [x, tiktok, threads, youtube, instagram];
 const providersByName = new Map(providers.map((p) => [p.name, p]));
 
 /** Map of alias to provider */
-const providersByAlias = new Map(
-  providers.flatMap((p) => p.aliases.map((alias) => [alias, p]))
-);
+const providersByAlias = new Map(providers.flatMap((p) => p.aliases.map((alias) => [alias, p])));
 
 /** Get provider by name */
 export function getProvider(name: string): Provider | undefined {

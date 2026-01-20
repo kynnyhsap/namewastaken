@@ -11,7 +11,7 @@ describe("TikTok provider", () => {
 
   test("returns true when username is taken", async () => {
     globalThis.fetch = mock(() =>
-      Promise.resolve(new Response(`some content "desc":"@testuser more content`))
+      Promise.resolve(new Response(`some content "desc":"@testuser more content`)),
     );
 
     const result = await Effect.runPromise(tiktok.check("testuser"));
@@ -19,9 +19,7 @@ describe("TikTok provider", () => {
   });
 
   test("returns false when username is available", async () => {
-    globalThis.fetch = mock(() =>
-      Promise.resolve(new Response("Page not found - no user here"))
-    );
+    globalThis.fetch = mock(() => Promise.resolve(new Response("Page not found - no user here")));
 
     const result = await Effect.runPromise(tiktok.check("testuser"));
     expect(result).toBe(false);

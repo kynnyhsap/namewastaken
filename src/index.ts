@@ -20,9 +20,15 @@ function showHelp() {
 
   console.log(pc.bold("  Usage:"));
   console.log();
-  console.log(`    ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.yellow("<username>")}              ${pc.dim("Check all platforms")}`);
-  console.log(`    ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.magenta("<provider>")} ${pc.yellow("<username>")}   ${pc.dim("Check single platform")}`);
-  console.log(`    ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.yellow("<url>")}                    ${pc.dim("Check from profile URL")}`);
+  console.log(
+    `    ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.yellow("<username>")}              ${pc.dim("Check all platforms")}`,
+  );
+  console.log(
+    `    ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.magenta("<provider>")} ${pc.yellow("<username>")}   ${pc.dim("Check single platform")}`,
+  );
+  console.log(
+    `    ${pc.green("$")} ${pc.cyan("namewastaken")} ${pc.yellow("<url>")}                    ${pc.dim("Check from profile URL")}`,
+  );
   console.log();
 
   console.log(pc.bold("  Providers:"));
@@ -37,7 +43,9 @@ function showHelp() {
   console.log(pc.bold("  Options:"));
   console.log();
   console.log(`    ${pc.cyan("--json")}                       ${pc.dim("Output results as JSON")}`);
-  console.log(`    ${pc.cyan("--no-cache")}                   ${pc.dim("Skip cache, fetch fresh results")}`);
+  console.log(
+    `    ${pc.cyan("--no-cache")}                   ${pc.dim("Skip cache, fetch fresh results")}`,
+  );
   console.log(`    ${pc.cyan("-v, --version")}                ${pc.dim("Show version number")}`);
   console.log(`    ${pc.cyan("-h, --help")}                   ${pc.dim("Show this help message")}`);
   console.log();
@@ -52,17 +60,15 @@ function showHelp() {
   console.log();
   console.log(`    ${pc.green("$")} namewastaken ${pc.yellow("mrbeast")}`);
   console.log(`    ${pc.green("$")} namewastaken ${pc.magenta("tt")} ${pc.yellow("mrbeast")}`);
-  console.log(`    ${pc.green("$")} namewastaken ${pc.magenta("ig")} ${pc.yellow("mrbeast")} ${pc.cyan("--json")}`);
+  console.log(
+    `    ${pc.green("$")} namewastaken ${pc.magenta("ig")} ${pc.yellow("mrbeast")} ${pc.cyan("--json")}`,
+  );
   console.log(`    ${pc.green("$")} namewastaken ${pc.yellow("https://x.com/MrBeast")}`);
   console.log();
 }
 
 // Helper function to handle a single provider check
-async function handleSingleProvider(
-  provider: Provider,
-  username: string,
-  json: boolean
-) {
+async function handleSingleProvider(provider: Provider, username: string, json: boolean) {
   const parsed = safeParseHandle(username);
   if (!parsed.success) {
     console.error(pc.red(`Error: ${parsed.error.errors[0].message}`));
@@ -122,7 +128,7 @@ program
       if (!parsed) {
         console.error(pc.red("Error: Unsupported URL format"));
         console.error(
-          pc.dim("Supported platforms: TikTok, Instagram, X/Twitter, Threads, YouTube")
+          pc.dim("Supported platforms: TikTok, Instagram, X/Twitter, Threads, YouTube"),
         );
         process.exit(1);
       }
@@ -159,7 +165,9 @@ program
       console.log(pc.bold("  Cache Statistics"));
       console.log();
       console.log(`    ${pc.dim("Entries:")}     ${stats.entries}`);
-      console.log(`    ${pc.dim("Providers:")}   ${stats.providers.length > 0 ? stats.providers.join(", ") : "none"}`);
+      console.log(
+        `    ${pc.dim("Providers:")}   ${stats.providers.length > 0 ? stats.providers.join(", ") : "none"}`,
+      );
       console.log(`    ${pc.dim("Location:")}    ~/.namewastaken/cache.json`);
       console.log(`    ${pc.dim("TTL:")}         24 hours`);
       console.log();

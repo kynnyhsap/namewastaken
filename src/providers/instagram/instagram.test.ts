@@ -11,7 +11,7 @@ describe("Instagram provider", () => {
 
   test("returns true when username is taken", async () => {
     globalThis.fetch = mock(() =>
-      Promise.resolve(new Response(`some content {"username":"testuser"} more content`))
+      Promise.resolve(new Response(`some content {"username":"testuser"} more content`)),
     );
 
     const result = await Effect.runPromise(instagram.check("testuser"));
@@ -19,9 +19,7 @@ describe("Instagram provider", () => {
   });
 
   test("returns false when username is available", async () => {
-    globalThis.fetch = mock(() =>
-      Promise.resolve(new Response("Page not found"))
-    );
+    globalThis.fetch = mock(() => Promise.resolve(new Response("Page not found")));
 
     const result = await Effect.runPromise(instagram.check("testuser"));
     expect(result).toBe(false);

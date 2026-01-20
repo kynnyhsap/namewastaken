@@ -19,7 +19,7 @@ export interface CheckAllResult {
  */
 export function checkSingle(
   provider: Provider,
-  username: string
+  username: string,
 ): Effect.Effect<CheckResult, never> {
   // Check cache first
   const cached = getCached(provider.name, username);
@@ -38,8 +38,8 @@ export function checkSingle(
         provider,
         taken: false,
         error: error.reason,
-      })
-    )
+      }),
+    ),
   );
 }
 
@@ -53,7 +53,7 @@ export function checkAll(username: string): Effect.Effect<CheckAllResult, never>
     Effect.map((results) => ({
       username,
       results,
-    }))
+    })),
   );
 }
 
@@ -62,7 +62,7 @@ export function checkAll(username: string): Effect.Effect<CheckAllResult, never>
  */
 export function checkProviders(
   providerList: Provider[],
-  username: string
+  username: string,
 ): Effect.Effect<CheckAllResult, never> {
   const checks = providerList.map((provider) => checkSingle(provider, username));
 
@@ -70,6 +70,6 @@ export function checkProviders(
     Effect.map((results) => ({
       username,
       results,
-    }))
+    })),
   );
 }

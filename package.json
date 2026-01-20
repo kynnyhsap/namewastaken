@@ -12,11 +12,15 @@
     "build": "bun build ./src/index.ts --compile --outfile=dist/namewastaken",
     "install:global": "bun run build && cp dist/namewastaken /usr/local/bin/namewastaken",
     "test": "bun test",
-    "test:integration": "bun test src/__tests__/integration.test.ts"
+    "test:integration": "bun test src/__tests__/integration.test.ts",
+    "fmt": "oxfmt --write src/",
+    "fmt:check": "oxfmt --check src/"
   },
   "private": true,
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "oxfmt": "^0.26.0",
+    "oxlint": "^1.41.0"
   },
   "peerDependencies": {
     "typescript": "^5"

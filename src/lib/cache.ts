@@ -55,10 +55,7 @@ function writeCache(data: CacheData) {
   }
 }
 
-export function getCached(
-  provider: ProviderName,
-  username: string
-): boolean | null {
+export function getCached(provider: ProviderName, username: string): boolean | null {
   if (!cacheEnabled) return null;
 
   const cache = readCache();
@@ -74,11 +71,7 @@ export function getCached(
   return entry.taken;
 }
 
-export function setCache(
-  provider: ProviderName,
-  username: string,
-  taken: boolean
-) {
+export function setCache(provider: ProviderName, username: string, taken: boolean) {
   if (!cacheEnabled) return;
 
   const cache = readCache();

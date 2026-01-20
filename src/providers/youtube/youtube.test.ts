@@ -10,27 +10,21 @@ describe("YouTube provider", () => {
   });
 
   test("returns true when username is taken (status 200)", async () => {
-    globalThis.fetch = mock(() =>
-      Promise.resolve(new Response("Channel page", { status: 200 }))
-    );
+    globalThis.fetch = mock(() => Promise.resolve(new Response("Channel page", { status: 200 })));
 
     const result = await Effect.runPromise(youtube.check("testuser"));
     expect(result).toBe(true);
   });
 
   test("returns false when username is available (status 404)", async () => {
-    globalThis.fetch = mock(() =>
-      Promise.resolve(new Response("Not found", { status: 404 }))
-    );
+    globalThis.fetch = mock(() => Promise.resolve(new Response("Not found", { status: 404 })));
 
     const result = await Effect.runPromise(youtube.check("testuser"));
     expect(result).toBe(false);
   });
 
   test("returns true for other status codes (302 redirect, etc)", async () => {
-    globalThis.fetch = mock(() =>
-      Promise.resolve(new Response("", { status: 302 }))
-    );
+    globalThis.fetch = mock(() => Promise.resolve(new Response("", { status: 302 })));
 
     const result = await Effect.runPromise(youtube.check("testuser"));
     expect(result).toBe(true);
