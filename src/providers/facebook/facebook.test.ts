@@ -13,33 +13,26 @@ describe("Facebook provider", () => {
     globalThis.fetch = originalFetch;
   });
 
-  test("returns true when username is taken", async () => {
+  test("returns true when username is taken (has profile title)", async () => {
     globalThis.fetch = mockFetch(() =>
-      Promise.resolve(new Response(`some facebook profile content`)),
+      Promise.resolve(new Response(`<html><head><title>MrBeast</title></head></html>`)),
     );
 
-    const result = await Effect.runPromise(facebook.check("testuser"));
+    const result = await Effect.runPromise(facebook.check("mrbeast"));
     expect(result).toBe(true);
   });
 
-  test("returns false when username is available (Page Not Found)", async () => {
-    globalThis.fetch = mockFetch(() => Promise.resolve(new Response("Page Not Found")));
-
-    const result = await Effect.runPromise(facebook.check("testuser"));
-    expect(result).toBe(false);
-  });
-
-  test("returns false when page isn't available", async () => {
-    globalThis.fetch = mockFetch(() => Promise.resolve(new Response("This page isn't available")));
-
-    const result = await Effect.runPromise(facebook.check("testuser"));
-    expect(result).toBe(false);
-  });
-
-  test("returns false when content isn't available", async () => {
+  test("returns false when username is available (generic Facebook title)", async () => {
     globalThis.fetch = mockFetch(() =>
-      Promise.resolve(new Response("This content isn't available")),
+      Promise.resolve(new Response(`<html><head><title>Facebook</title></head></html>`)),
     );
+
+    const result = await Effect.runPromise(facebook.check("testuser"));
+    expect(result).toBe(false);
+  });
+
+  test("returns false when no title found", async () => {
+    globalThis.fetch = mockFetch(() => Promise.resolve(new Response(`<html><head></head></html>`)));
 
     const result = await Effect.runPromise(facebook.check("testuser"));
     expect(result).toBe(false);
@@ -52,7 +45,7 @@ describe("Facebook provider", () => {
       if (attempts < 3) {
         return Promise.reject(new Error("Network error"));
       }
-      return Promise.resolve(new Response(`facebook profile`));
+      return Promise.resolve(new Response(`<title>SomeUser</title>`));
     });
 
     const result = await Effect.runPromise(facebook.check("testuser"));
@@ -73,7 +66,7 @@ describe("Facebook provider", () => {
     let calledUrl = "";
     globalThis.fetch = mockFetch((input: RequestInfo | URL) => {
       calledUrl = String(input);
-      return Promise.resolve(new Response(""));
+      return Promise.resolve(new Response("<title>Facebook</title>"));
     });
 
     await Effect.runPromise(facebook.check("myusername"));

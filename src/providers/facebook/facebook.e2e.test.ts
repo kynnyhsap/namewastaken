@@ -5,19 +5,19 @@ import { Effect } from "effect";
 import { facebook } from "./facebook";
 
 // Integration tests - make real HTTP requests
-// Run with: bun test src/providers/facebook/facebook.e2e.ts
+// Run with: bun test:e2e
 
-describe.skip("Facebook provider (e2e)", () => {
-  const KNOWN_TAKEN = "zuck";
-  const LIKELY_AVAILABLE = "xyzabc123456789test";
+describe("Facebook provider (e2e)", () => {
+  const KNOWN_TAKEN = "mrbeast";
+  const LIKELY_AVAILABLE = "mrbeastsdafasdfasdfsad";
 
   test("detects taken username", async () => {
     const result = await Effect.runPromise(facebook.check(KNOWN_TAKEN));
     expect(result).toBe(true);
-  }, 10000);
+  }, 15000);
 
   test("detects available username", async () => {
     const result = await Effect.runPromise(facebook.check(LIKELY_AVAILABLE));
     expect(result).toBe(false);
-  }, 10000);
+  }, 15000);
 });

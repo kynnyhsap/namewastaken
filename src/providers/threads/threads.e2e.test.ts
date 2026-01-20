@@ -2,22 +2,22 @@ import { describe, test, expect } from "bun:test";
 
 import { Effect } from "effect";
 
-import { x } from "./x";
+import { threads } from "./threads";
 
 // Integration tests - make real HTTP requests
-// Run with: bun test src/providers/x/x.e2e.ts
+// Run with: bun test:e2e
 
-describe.skip("X/Twitter provider (e2e)", () => {
-  const KNOWN_TAKEN = "nike";
+describe("Threads provider (e2e)", () => {
+  const KNOWN_TAKEN = "mrbeast";
   const LIKELY_AVAILABLE = "xyzabc123456789test";
 
   test("detects taken username", async () => {
-    const result = await Effect.runPromise(x.check(KNOWN_TAKEN));
+    const result = await Effect.runPromise(threads.check(KNOWN_TAKEN));
     expect(result).toBe(true);
-  }, 10000);
+  }, 15000);
 
   test("detects available username", async () => {
-    const result = await Effect.runPromise(x.check(LIKELY_AVAILABLE));
+    const result = await Effect.runPromise(threads.check(LIKELY_AVAILABLE));
     expect(result).toBe(false);
-  }, 10000);
+  }, 15000);
 });

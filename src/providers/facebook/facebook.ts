@@ -16,16 +16,17 @@ const check = (username: string) =>
         const response = await fetch(`https://www.facebook.com/${username}`, {
           signal: controller.signal,
           headers: {
-            "User-Agent":
-              "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "User-Agent": "curl/7.79.1",
+            Accept: "*/*",
           },
         });
         const html = await response.text();
-        // Facebook returns "Page Not Found" or redirects to login for non-existent users
-        const notFound =
-          html.includes("Page Not Found") ||
-          html.includes("This page isn't available") ||
-          html.includes("This content isn't available");
+        // Non-existent profiles have generic titles like "Facebook" or "Error"
+        // Existing profiles have the actual username or page name as title
+        const titleMatch = html.match(/<title>([^<]*)<\/title>/);
+        const title = titleMatch?.[1] ?? "";
+        // If title is generic, the profile doesn't exist
+        const notFound = title === "" || title === "Facebook" || title === "Error";
         return !notFound;
       } finally {
         clearTimeout(timeout);
