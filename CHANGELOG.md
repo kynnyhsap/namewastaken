@@ -4,8 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.2] - 2025-01-20
 
+### Changed
+- CLI now requires Bun runtime (fixes X/Twitter rate limiting with Node.js)
+
 ### Fixed
-- X/Twitter: Show error instead of "available" when rate limited (affects Node.js/npx)
+- X/Twitter: Reliable detection (Node.js fetch was being rate limited by Twitter)
 
 ## [1.6.1] - 2025-01-20
 
