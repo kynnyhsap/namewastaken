@@ -3,15 +3,16 @@ import { Effect, Schedule } from "effect";
 import { Provider, ProviderCheckError } from "../types";
 
 const TIMEOUT_MS = 10000;
+const BASE_URL = "https://threads.com";
 
 const URL_PATTERN = /^https?:\/\/(?:www\.)?threads\.(?:net|com)\/@([a-zA-Z0-9._]+)/;
 
 const check = (username: string) =>
   Effect.tryPromise({
     try: async () => {
-      // Use threads.com directly (threads.net just redirects there)
+      // threads.net redirects to threads.com
       // Use a simple User-Agent to avoid SPA mode which doesn't redirect
-      const response = await fetch(`https://www.threads.com/@${username}`, {
+      const response = await fetch(`${BASE_URL}/@${username}`, {
         signal: AbortSignal.timeout(TIMEOUT_MS),
         headers: {
           "User-Agent": "namewastaken/1.0",
@@ -40,7 +41,7 @@ export const threads: Provider = {
   displayName: "Threads",
   aliases: ["threads"],
   check,
-  profileUrl: (username) => `https://threads.net/@${username}`,
+  profileUrl: (username) => `${BASE_URL}/@${username}`,
   parseUrl: (url) => {
     const match = url.match(URL_PATTERN);
     return match?.[1]?.toLowerCase() ?? null;

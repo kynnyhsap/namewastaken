@@ -41,15 +41,21 @@ describe("URL parser", () => {
     });
 
     test("parses Threads URL", () => {
-      const result = parseUrl("https://threads.net/@username");
+      const result = parseUrl("https://threads.com/@username");
       expect(result?.provider).toBe(threads);
       expect(result?.username).toBe("username");
     });
 
     test("parses Threads URL with www", () => {
-      const result = parseUrl("https://www.threads.net/@testuser");
+      const result = parseUrl("https://www.threads.com/@testuser");
       expect(result?.provider).toBe(threads);
       expect(result?.username).toBe("testuser");
+    });
+
+    test("parses Threads .net URL (legacy)", () => {
+      const result = parseUrl("https://threads.net/@username");
+      expect(result?.provider).toBe(threads);
+      expect(result?.username).toBe("username");
     });
 
     test("parses YouTube URL", () => {

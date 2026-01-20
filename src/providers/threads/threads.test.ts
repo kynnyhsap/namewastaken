@@ -78,17 +78,18 @@ describe("Threads provider", () => {
     });
 
     await Effect.runPromise(threads.check("myusername"));
-    expect(calledUrl).toBe("https://www.threads.com/@myusername");
+    expect(calledUrl).toBe("https://threads.com/@myusername");
   });
 
   test("profileUrl generates correct URL", () => {
-    expect(threads.profileUrl("testuser")).toBe("https://threads.net/@testuser");
+    expect(threads.profileUrl("testuser")).toBe("https://threads.com/@testuser");
   });
 
   test("parseUrl extracts username from Threads URL", () => {
-    expect(threads.parseUrl("https://threads.net/@testuser")).toBe("testuser");
-    expect(threads.parseUrl("https://www.threads.net/@TestUser")).toBe("testuser");
     expect(threads.parseUrl("https://threads.com/@testuser")).toBe("testuser");
+    expect(threads.parseUrl("https://www.threads.com/@TestUser")).toBe("testuser");
+    // Also support threads.net URLs (they redirect to threads.com)
+    expect(threads.parseUrl("https://threads.net/@testuser")).toBe("testuser");
   });
 
   test("parseUrl returns null for non-Threads URL", () => {
