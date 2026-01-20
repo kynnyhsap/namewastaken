@@ -1,10 +1,17 @@
 {
   "name": "namewastaken",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Check if a username is taken on social platforms",
   "type": "module",
+  "main": "./dist/sdk.js",
+  "exports": {
+    ".": {
+      "import": "./dist/sdk.js",
+      "types": "./dist/sdk.d.ts"
+    }
+  },
   "bin": {
-    "namewastaken": "./dist/index.js"
+    "namewastaken": "./dist/cli.js"
   },
   "files": [
     "dist"
@@ -12,9 +19,12 @@
   "scripts": {
     "start": "bun run ./src/index.ts",
     "dev": "bun --watch run ./src/index.ts",
-    "build": "bun build ./src/index.ts --outdir=dist --target=node --format=esm && sed -i '' '1s|#!/usr/bin/env bun|#!/usr/bin/env node|' dist/index.js",
+    "build": "bun run build:sdk && bun run build:cli",
+    "build:sdk": "bun build ./src/sdk.ts --outdir=dist --outfile=dist/sdk.js --target=node --format=esm",
+    "build:cli": "bun build ./src/index.ts --outfile=dist/cli.js --target=node --format=esm && sed -i '' '1s|#!/usr/bin/env bun|#!/usr/bin/env node|' dist/cli.js",
+    "build:types": "cp src/sdk.d.ts dist/sdk.d.ts",
     "build:binary": "bun build ./src/index.ts --compile --outfile=dist/namewastaken",
-    "prepublishOnly": "bun run build",
+    "prepublishOnly": "bun run build && bun run build:types",
     "test": "bun test",
     "test:e2e": "bun test --test-name-pattern e2e",
     "fmt": "oxfmt --write src/",

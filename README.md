@@ -5,6 +5,12 @@ Check if a username is taken across multiple social platforms.
 ## Installation
 
 ```bash
+npm install namewastaken
+```
+
+## CLI Usage
+
+```bash
 npx namewastaken mrbeast
 ```
 
@@ -12,90 +18,78 @@ Or install globally:
 
 ```bash
 npm install -g namewastaken
+namewastaken mrbeast
 ```
 
-## Usage
+### CLI Examples
 
 ```bash
 # Check username on all platforms
-namewastaken <username>
-
-# Check multiple usernames
-namewastaken <username1> <username2> ...
-
-# Check on specific platform(s)
-namewastaken <username> -p <platform>
-namewastaken <username> -p tt,ig,yt
-
-# Check from a profile URL
-namewastaken <url>
-```
-
-## Examples
-
-```bash
-# Check "mrbeast" on all platforms
 namewastaken mrbeast
 
 # Check multiple usernames
 namewastaken mrbeast pewdiepie ninja
 
-# Check on TikTok only
+# Check on specific platform(s)
 namewastaken mrbeast -p tiktok
-namewastaken mrbeast -p tt        # using alias
-
-# Check on multiple platforms
 namewastaken mrbeast -p tt,ig,yt
-
-# Bulk check with specific platforms
-namewastaken mrbeast theo -p tt,ig
 
 # Check from URL
 namewastaken https://x.com/MrBeast
 
 # Output as JSON
 namewastaken mrbeast --json
-
-# Skip cache (fetch fresh results)
-namewastaken mrbeast --no-cache
 ```
 
-## Output
+## SDK Usage
 
-### Single username
+```ts
+import { check, checkBulk, platforms, parseUrl } from 'namewastaken'
 
+// Check a single username on all platforms
+const result = await check('mrbeast')
+console.log(result)
+// {
+//   username: 'mrbeast',
+//   results: [
+//     { platform: 'x', displayName: 'X/Twitter', taken: true, available: false, url: '...' },
+//     { platform: 'tiktok', displayName: 'TikTok', taken: true, available: false, url: '...' },
+//     ...
+//   ],
+//   summary: { available: 0, taken: 5, errors: 0 }
+// }
+
+// Check on specific platforms only
+const result = await check('mrbeast', { platforms: ['tiktok', 'instagram'] })
+
+// Check multiple usernames
+const results = await checkBulk(['mrbeast', 'pewdiepie', 'ninja'])
+console.log(results.summary) // { available: 2, taken: 13, errors: 0 }
+
+// List all supported platforms
+console.log(platforms)
+// [
+//   { name: 'x', displayName: 'X/Twitter', aliases: ['x', 'twitter'] },
+//   { name: 'tiktok', displayName: 'TikTok', aliases: ['tiktok', 'tt'] },
+//   ...
+// ]
+
+// Parse a profile URL
+const parsed = parseUrl('https://tiktok.com/@mrbeast')
+// { platform: 'tiktok', username: 'mrbeast' }
 ```
-Checking username: mrbeast
 
-+-----------+---------+-------------------------------+
-| Platform  | Status  | URL                           |
-+-----------+---------+-------------------------------+
-| X/Twitter | x taken | https://x.com/mrbeast         |
-| TikTok    | x taken | https://tiktok.com/@mrbeast   |
-| Threads   | x taken | https://threads.net/@mrbeast  |
-| YouTube   | x taken | https://youtube.com/@mrbeast  |
-| Instagram | x taken | https://instagram.com/mrbeast |
-+-----------+---------+-------------------------------+
+### SDK Options
 
-5 taken in 1.23s
-```
+```ts
+interface CheckOptions {
+  // Specific platforms to check (e.g., ['tiktok', 'ig', 'x'])
+  platforms?: string[]
+  // Whether to use cached results (default: true)
+  cache?: boolean
+}
 
-### Multiple usernames
-
-```
-Checking 3 usernames:
-
-+----------+---+--------+---------+---------+-----------+
-| Username | x | tiktok | threads | youtube | instagram |
-+----------+---+--------+---------+---------+-----------+
-| mrbeast  | x | x      | x       | x       | x         |
-| pewds    | x | x      | o       | x       | x         |
-| ninja    | x | x      | x       | x       | x         |
-+----------+---+--------+---------+---------+-----------+
-
-o available  x taken  ? error
-
-Total: 1 available, 14 taken in 2.34s
+await check('mrbeast', { platforms: ['tiktok', 'ig'], cache: false })
 ```
 
 ## Platforms
@@ -108,13 +102,7 @@ Total: 1 available, 14 taken in 2.34s
 | YouTube   | `youtube`   | `yt`            |
 | Instagram | `instagram` | `ig`            |
 
-List all platforms:
-
-```bash
-namewastaken platforms
-```
-
-## Options
+## CLI Options
 
 | Option              | Description                     |
 |---------------------|---------------------------------|
@@ -124,7 +112,7 @@ namewastaken platforms
 | `-v, --version`     | Show version number             |
 | `-h, --help`        | Show help message               |
 
-## Commands
+## CLI Commands
 
 | Command         | Description                          |
 |-----------------|--------------------------------------|
@@ -133,18 +121,6 @@ namewastaken platforms
 | `mcp --stdio`   | Start MCP server (STDIO)             |
 | `cache clear`   | Clear the cache                      |
 | `cache stats`   | Show cache statistics                |
-
-## Cache
-
-Results are cached for 24 hours in `~/.namewastaken/cache.json`.
-
-```bash
-# View cache statistics
-namewastaken cache stats
-
-# Clear the cache
-namewastaken cache clear
-```
 
 ## MCP Server
 
@@ -158,53 +134,10 @@ namewastaken mcp
 namewastaken mcp --stdio
 ```
 
-### Available Tools
+### MCP Tools
 
 - `check_username` - Check a username on all platforms
 - `check_usernames_in_bulk` - Check multiple usernames on all platforms
-
-## Development
-
-```bash
-# Clone and install
-git clone https://github.com/kynnyhsap/namewastaken.git
-cd namewastaken
-bun install
-
-# Run in development mode
-bun run dev
-
-# Run tests
-bun test
-
-# Build for npm
-bun run build
-
-# Type check
-bun run typecheck
-
-# Lint
-bun run lint
-```
-
-## How It Works
-
-The tool checks username availability by fetching the profile URL for each platform and analyzing the response:
-
-- **TikTok** - Checks if profile data exists in HTML
-- **Instagram** - Checks if username pattern exists in HTML
-- **X/Twitter** - Checks if "This account doesn't exist" message is absent
-- **Threads** - Checks if the request redirects to login page (available) or stays on profile (taken)
-- **YouTube** - Checks if the response status is not 404
-
-## Tech Stack
-
-- [Bun](https://bun.sh/) - Runtime and bundler
-- [Effect](https://effect.website/) - Concurrency, retries, and error handling
-- [Commander](https://github.com/tj/commander.js) - CLI framework
-- [MCP SDK](https://github.com/modelcontextprotocol/typescript-sdk) - Model Context Protocol
-- [picocolors](https://github.com/alexeyraspopov/picocolors) - Terminal colors
-- [Zod](https://zod.dev/) - Input validation
 
 ## License
 
