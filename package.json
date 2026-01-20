@@ -2,6 +2,29 @@
   "name": "namewastaken",
   "version": "1.2.0",
   "description": "Check if a username is taken on social platforms",
+  "keywords": [
+    "username",
+    "handle",
+    "availability",
+    "checker",
+    "social-media",
+    "tiktok",
+    "instagram",
+    "twitter",
+    "x",
+    "threads",
+    "youtube",
+    "cli",
+    "mcp",
+    "model-context-protocol"
+  ],
+  "author": "kynnyhsap",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kynnyhsap/namewastaken.git"
+  },
+  "homepage": "https://github.com/kynnyhsap/namewastaken",
   "type": "module",
   "main": "./dist/sdk.js",
   "exports": {

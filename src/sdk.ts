@@ -70,27 +70,25 @@ export type FullCheckResult = CheckResults & {
 
 /** Options for check operations */
 export interface CheckOptions {
+  /** Filter to specific platforms (e.g., ['tiktok', 'ig']) */
+  platforms?: string[];
+  /** Whether to use cached results (default: true) */
   cache?: boolean;
 }
 
-/** Platform checker interface */
+/** Platform checker interface (for single platform) */
 export interface PlatformChecker {
   /** Check if username is available */
-  available(username: string, options?: CheckOptions): Promise<boolean>;
+  available(username: string, options?: { cache?: boolean }): Promise<boolean>;
   /** Check if username is taken */
-  taken(username: string, options?: CheckOptions): Promise<boolean>;
+  taken(username: string, options?: { cache?: boolean }): Promise<boolean>;
   /** Get full check result for single username */
-  check(username: string, options?: CheckOptions): Promise<PlatformCheckResult>;
+  check(username: string, options?: { cache?: boolean }): Promise<PlatformCheckResult>;
   /** Check multiple usernames */
-  checkMany(usernames: string[], options?: CheckOptions): Promise<Map<string, PlatformCheckResult>>;
-}
-
-/** Filtered checker (from .only()) */
-export interface FilteredChecker {
-  check(username: string, options?: CheckOptions): Promise<FullCheckResult>;
-  checkMany(usernames: string[], options?: CheckOptions): Promise<Map<string, FullCheckResult>>;
-  available(username: string, options?: CheckOptions): Promise<boolean>;
-  taken(username: string, options?: CheckOptions): Promise<boolean>;
+  checkMany(
+    usernames: string[],
+    options?: { cache?: boolean },
+  ): Promise<Map<string, PlatformCheckResult>>;
 }
 
 // ============================================================================
@@ -223,10 +221,14 @@ async function checkManyAllPlatforms(
 }
 
 // ============================================================================
-// Filtered checker (.only())
+// Platform resolution helper
 // ============================================================================
 
-function createFilteredChecker(platformNames: string[]): FilteredChecker {
+function resolveProviderList(platformNames?: string[]): Provider[] {
+  if (!platformNames || platformNames.length === 0) {
+    return providers;
+  }
+
   const providerList = platformNames
     .map((name) => resolveProvider(name))
     .filter((p): p is Provider => p !== undefined);
@@ -237,25 +239,7 @@ function createFilteredChecker(platformNames: string[]): FilteredChecker {
     );
   }
 
-  return {
-    check(username: string, options?: CheckOptions): Promise<FullCheckResult> {
-      return checkOneAllPlatforms(username, providerList, options);
-    },
-
-    checkMany(usernames: string[], options?: CheckOptions): Promise<Map<string, FullCheckResult>> {
-      return checkManyAllPlatforms(usernames, providerList, options);
-    },
-
-    async available(username: string, options?: CheckOptions): Promise<boolean> {
-      const result = await checkOneAllPlatforms(username, providerList, options);
-      return result.summary.available === providerList.length;
-    },
-
-    async taken(username: string, options?: CheckOptions): Promise<boolean> {
-      const result = await checkOneAllPlatforms(username, providerList, options);
-      return result.summary.taken > 0;
-    },
-  };
+  return providerList;
 }
 
 // ============================================================================
@@ -293,71 +277,72 @@ const youtube = createPlatformChecker(providers.find((p) => p.name === "youtube"
 const instagram = createPlatformChecker(providers.find((p) => p.name === "instagram")!);
 
 /**
- * Check username availability on all platforms.
+ * Check username availability.
  *
  * @example
  * ```ts
+ * // Check all platforms
  * const result = await check('mrbeast')
  * result.tiktok.taken  // true
+ *
+ * // Check specific platforms
+ * const result = await check('mrbeast', { platforms: ['tiktok', 'ig'] })
  * ```
  */
 function check(username: string, options?: CheckOptions): Promise<FullCheckResult> {
-  return checkOneAllPlatforms(username, providers, options);
+  const providerList = resolveProviderList(options?.platforms);
+  return checkOneAllPlatforms(username, providerList, options);
 }
 
 /**
- * Check multiple usernames on all platforms.
+ * Check multiple usernames.
  *
  * @example
  * ```ts
+ * // Check all platforms
  * const results = await checkMany(['mrbeast', 'pewdiepie'])
  * results.get('mrbeast').tiktok.taken  // true
+ *
+ * // Check specific platforms
+ * const results = await checkMany(['mrbeast', 'pewdiepie'], { platforms: ['tt'] })
  * ```
  */
 function checkMany(
   usernames: string[],
   options?: CheckOptions,
 ): Promise<Map<string, FullCheckResult>> {
-  return checkManyAllPlatforms(usernames, providers, options);
+  const providerList = resolveProviderList(options?.platforms);
+  return checkManyAllPlatforms(usernames, providerList, options);
 }
 
 /**
- * Check if username is available on ALL platforms.
+ * Check if username is available on ALL specified platforms.
  *
  * @example
  * ```ts
  * await available('mrbeast')  // false (taken on at least one platform)
+ * await available('mrbeast', { platforms: ['tiktok'] })  // check only tiktok
  * ```
  */
 async function available(username: string, options?: CheckOptions): Promise<boolean> {
-  const result = await checkOneAllPlatforms(username, providers, options);
-  return result.summary.available === providers.length;
+  const providerList = resolveProviderList(options?.platforms);
+  const result = await checkOneAllPlatforms(username, providerList, options);
+  return result.summary.available === providerList.length;
 }
 
 /**
- * Check if username is taken on ANY platform.
+ * Check if username is taken on ANY of the specified platforms.
  *
  * @example
  * ```ts
  * await taken('mrbeast')  // true (taken on at least one platform)
+ * await taken('mrbeast', { platforms: ['tiktok'] })  // check only tiktok
  * ```
  */
 async function taken(username: string, options?: CheckOptions): Promise<boolean> {
-  const result = await checkOneAllPlatforms(username, providers, options);
+  const providerList = resolveProviderList(options?.platforms);
+  const result = await checkOneAllPlatforms(username, providerList, options);
   return result.summary.taken > 0;
-}
-
-/**
- * Filter to specific platforms.
- *
- * @example
- * ```ts
- * await only('tiktok', 'instagram').check('mrbeast')
- * await only('tt', 'ig').available('mrbeast')
- * ```
- */
-function only(...platformNames: string[]): FilteredChecker {
-  return createFilteredChecker(platformNames);
 }
 
 // Default export - the main SDK object
@@ -367,7 +352,6 @@ const nwt = {
   checkMany,
   available,
   taken,
-  only,
 
   // Platform-specific checkers
   x,
@@ -384,4 +368,4 @@ const nwt = {
 export default nwt;
 
 // Named exports for convenience
-export { check, checkMany, available, taken, only, x, tiktok, threads, youtube, instagram };
+export { check, checkMany, available, taken, x, tiktok, threads, youtube, instagram };

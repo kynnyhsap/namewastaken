@@ -33,27 +33,25 @@ export type FullCheckResult = CheckResults & {
 
 /** Options for check operations */
 export interface CheckOptions {
+  /** Filter to specific platforms (e.g., ['tiktok', 'ig']) */
+  platforms?: string[];
+  /** Whether to use cached results (default: true) */
   cache?: boolean;
 }
 
-/** Platform checker interface */
+/** Platform checker interface (for single platform like nwt.tiktok) */
 export interface PlatformChecker {
   /** Check if username is available */
-  available(username: string, options?: CheckOptions): Promise<boolean>;
+  available(username: string, options?: { cache?: boolean }): Promise<boolean>;
   /** Check if username is taken */
-  taken(username: string, options?: CheckOptions): Promise<boolean>;
+  taken(username: string, options?: { cache?: boolean }): Promise<boolean>;
   /** Get full check result for single username */
-  check(username: string, options?: CheckOptions): Promise<PlatformCheckResult>;
+  check(username: string, options?: { cache?: boolean }): Promise<PlatformCheckResult>;
   /** Check multiple usernames */
-  checkMany(usernames: string[], options?: CheckOptions): Promise<Map<string, PlatformCheckResult>>;
-}
-
-/** Filtered checker (from .only()) */
-export interface FilteredChecker {
-  check(username: string, options?: CheckOptions): Promise<FullCheckResult>;
-  checkMany(usernames: string[], options?: CheckOptions): Promise<Map<string, FullCheckResult>>;
-  available(username: string, options?: CheckOptions): Promise<boolean>;
-  taken(username: string, options?: CheckOptions): Promise<boolean>;
+  checkMany(
+    usernames: string[],
+    options?: { cache?: boolean },
+  ): Promise<Map<string, PlatformCheckResult>>;
 }
 
 /** Platform info */
@@ -83,23 +81,31 @@ export const youtube: PlatformChecker;
 export const instagram: PlatformChecker;
 
 /**
- * Check username availability on all platforms.
+ * Check username availability.
  *
  * @example
  * ```ts
+ * // All platforms
  * const result = await check('mrbeast')
  * result.tiktok.taken  // true
+ *
+ * // Specific platforms
+ * const result = await check('mrbeast', { platforms: ['tiktok', 'ig'] })
  * ```
  */
 export function check(username: string, options?: CheckOptions): Promise<FullCheckResult>;
 
 /**
- * Check multiple usernames on all platforms.
+ * Check multiple usernames.
  *
  * @example
  * ```ts
+ * // All platforms
  * const results = await checkMany(['mrbeast', 'pewdiepie'])
  * results.get('mrbeast').tiktok.taken  // true
+ *
+ * // Specific platforms
+ * const results = await checkMany(['mrbeast'], { platforms: ['tt'] })
  * ```
  */
 export function checkMany(
@@ -108,42 +114,32 @@ export function checkMany(
 ): Promise<Map<string, FullCheckResult>>;
 
 /**
- * Check if username is available on ALL platforms.
+ * Check if username is available on ALL specified platforms.
  *
  * @example
  * ```ts
  * await available('mrbeast')  // false
+ * await available('mrbeast', { platforms: ['tiktok'] })
  * ```
  */
 export function available(username: string, options?: CheckOptions): Promise<boolean>;
 
 /**
- * Check if username is taken on ANY platform.
+ * Check if username is taken on ANY of the specified platforms.
  *
  * @example
  * ```ts
  * await taken('mrbeast')  // true
+ * await taken('mrbeast', { platforms: ['tiktok'] })
  * ```
  */
 export function taken(username: string, options?: CheckOptions): Promise<boolean>;
-
-/**
- * Filter to specific platforms.
- *
- * @example
- * ```ts
- * await only('tiktok', 'instagram').check('mrbeast')
- * await only('tt', 'ig').available('mrbeast')
- * ```
- */
-export function only(...platformNames: string[]): FilteredChecker;
 
 declare const nwt: {
   check: typeof check;
   checkMany: typeof checkMany;
   available: typeof available;
   taken: typeof taken;
-  only: typeof only;
   x: PlatformChecker;
   tiktok: PlatformChecker;
   threads: PlatformChecker;

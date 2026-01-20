@@ -44,7 +44,7 @@ ${pc.bold("  Platforms:")}
 
 ${pc.bold("  Options:")}
 
-    ${pc.cyan("-p, --platform <name>")}          ${pc.dim("Check specific platform(s)")}
+    ${pc.cyan("-p, --platforms <name>")}         ${pc.dim("Check specific platform(s)")}
     ${pc.cyan("--json")}                         ${pc.dim("Output results as JSON")}
     ${pc.cyan("--no-cache")}                     ${pc.dim("Skip cache, fetch fresh results")}
     ${pc.cyan("-v, --version")}                  ${pc.dim("Show version number")}
@@ -209,11 +209,11 @@ program
 // Default command - check all providers or handle URL
 program
   .argument("[inputs...]", "Username(s) or URL to check")
-  .option("-p, --platform <platforms>", "Check specific platform(s), comma-separated")
+  .option("-p, --platforms <platforms>", "Check specific platform(s), comma-separated")
   .option("--json", "Output results as JSON")
   .option("--no-cache", "Skip cache, fetch fresh results")
   .action(
-    async (inputs: string[], options: { platform?: string; json?: boolean; cache?: boolean }) => {
+    async (inputs: string[], options: { platforms?: string; json?: boolean; cache?: boolean }) => {
       if (options.cache === false) {
         setCacheEnabled(false);
       }
@@ -223,9 +223,9 @@ program
         return;
       }
 
-      // If --platform is provided, use it
-      if (options.platform) {
-        const providerList = parsePlatformOption(options.platform);
+      // If --platforms is provided, use it
+      if (options.platforms) {
+        const providerList = parsePlatformOption(options.platforms);
 
         if (inputs.length === 1) {
           const input = inputs[0];

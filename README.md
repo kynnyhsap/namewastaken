@@ -8,62 +8,6 @@ Check if a username is taken across multiple social platforms.
 npm install namewastaken
 ```
 
-## SDK Usage
-
-```ts
-import nwt from 'namewastaken'
-
-// Quick boolean checks
-await nwt.available('mrbeast')  // false - taken on at least one platform
-await nwt.taken('mrbeast')      // true - taken on at least one platform
-
-// Platform-specific checks
-await nwt.tiktok.available('mrbeast')  // false
-await nwt.tiktok.taken('mrbeast')      // true
-await nwt.tiktok.check('mrbeast')      // { taken: true, available: false, url: '...' }
-
-// Full check on all platforms
-const result = await nwt.check('mrbeast')
-result.tiktok.taken      // true
-result.instagram.taken   // true  
-result.summary           // { available: 0, taken: 5, errors: 0 }
-
-// Check multiple usernames
-const results = await nwt.checkMany(['mrbeast', 'pewdiepie'])
-results.get('mrbeast').tiktok.taken  // true
-
-// Filter to specific platforms
-const filtered = await nwt.only('tiktok', 'instagram').check('mrbeast')
-filtered.tiktok.taken     // true
-filtered.youtube          // undefined (not checked)
-
-// Use aliases
-await nwt.only('tt', 'ig').check('mrbeast')  // same as above
-
-// List all platforms
-console.log(nwt.platforms)
-// [
-//   { name: 'x', displayName: 'X/Twitter', aliases: ['x', 'twitter'] },
-//   { name: 'tiktok', displayName: 'TikTok', aliases: ['tiktok', 'tt'] },
-//   ...
-// ]
-
-// Parse profile URL
-nwt.parseUrl('https://tiktok.com/@mrbeast')
-// { platform: 'tiktok', username: 'mrbeast' }
-```
-
-### Named Imports
-
-```ts
-import { check, tiktok, available, only } from 'namewastaken'
-
-await check('mrbeast')
-await tiktok.taken('mrbeast')
-await available('mrbeast')
-await only('tt', 'ig').check('mrbeast')
-```
-
 ## CLI Usage
 
 ```bash
@@ -88,13 +32,89 @@ namewastaken mrbeast pewdiepie ninja
 
 # Check on specific platform(s)
 namewastaken mrbeast -p tiktok
-namewastaken mrbeast -p tt,ig,yt
+namewastaken mrbeast --platforms tt,ig,yt
 
 # Check from URL
 namewastaken https://x.com/MrBeast
 
 # Output as JSON
 namewastaken mrbeast --json
+```
+
+### CLI Options
+
+| Option              | Description                     |
+|---------------------|---------------------------------|
+| `-p, --platforms`   | Check specific platform(s)      |
+| `--json`            | Output results as JSON          |
+| `--no-cache`        | Skip cache, fetch fresh results |
+| `-v, --version`     | Show version number             |
+| `-h, --help`        | Show help message               |
+
+### CLI Commands
+
+| Command         | Description                          |
+|-----------------|--------------------------------------|
+| `platforms`     | List all supported platforms         |
+| `mcp`           | Start MCP server (Streamable HTTP)   |
+| `mcp --stdio`   | Start MCP server (STDIO)             |
+| `cache clear`   | Clear the cache                      |
+| `cache stats`   | Show cache statistics                |
+
+## SDK Usage
+
+```ts
+import nwt from 'namewastaken'
+
+// Quick boolean checks
+await nwt.available('mrbeast')  // false - taken on at least one platform
+await nwt.taken('mrbeast')      // true - taken on at least one platform
+
+// Full check on all platforms
+const result = await nwt.check('mrbeast')
+result.tiktok.taken      // true
+result.instagram.taken   // true  
+result.summary           // { available: 0, taken: 5, errors: 0 }
+
+// Filter to specific platforms
+const result = await nwt.check('mrbeast', { platforms: ['tiktok', 'ig'] })
+result.tiktok.taken     // true
+result.youtube          // undefined (not checked)
+
+// Check multiple usernames
+const results = await nwt.checkMany(['mrbeast', 'pewdiepie'])
+results.get('mrbeast').tiktok.taken  // true
+
+// With platform filter
+const results = await nwt.checkMany(['mrbeast', 'pewdiepie'], { platforms: ['tt'] })
+
+// Platform-specific checks (shorthand)
+await nwt.tiktok.available('mrbeast')  // false
+await nwt.tiktok.taken('mrbeast')      // true
+await nwt.tiktok.check('mrbeast')      // { taken: true, available: false, url: '...' }
+
+// List all platforms
+console.log(nwt.platforms)
+// [
+//   { name: 'x', displayName: 'X/Twitter', aliases: ['x', 'twitter'] },
+//   { name: 'tiktok', displayName: 'TikTok', aliases: ['tiktok', 'tt'] },
+//   ...
+// ]
+
+// Parse profile URL
+nwt.parseUrl('https://tiktok.com/@mrbeast')
+// { platform: 'tiktok', username: 'mrbeast' }
+```
+
+### Named Imports
+
+```ts
+import { check, checkMany, tiktok, available } from 'namewastaken'
+
+await check('mrbeast')
+await check('mrbeast', { platforms: ['tt', 'ig'] })
+await tiktok.taken('mrbeast')
+await available('mrbeast')
 ```
 
 ## Platforms
@@ -106,26 +126,6 @@ namewastaken mrbeast --json
 | Threads   | `threads`   |                 |
 | YouTube   | `youtube`   | `yt`            |
 | Instagram | `instagram` | `ig`            |
-
-## CLI Options
-
-| Option              | Description                     |
-|---------------------|---------------------------------|
-| `-p, --platform`    | Check specific platform(s)      |
-| `--json`            | Output results as JSON          |
-| `--no-cache`        | Skip cache, fetch fresh results |
-| `-v, --version`     | Show version number             |
-| `-h, --help`        | Show help message               |
-
-## CLI Commands
-
-| Command         | Description                          |
-|-----------------|--------------------------------------|
-| `platforms`     | List all supported platforms         |
-| `mcp`           | Start MCP server (Streamable HTTP)   |
-| `mcp --stdio`   | Start MCP server (STDIO)             |
-| `cache clear`   | Clear the cache                      |
-| `cache stats`   | Show cache statistics                |
 
 ## MCP Server
 
