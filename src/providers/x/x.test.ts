@@ -14,14 +14,18 @@ describe("X/Twitter provider", () => {
   });
 
   test("returns true when username is taken", async () => {
-    globalThis.fetch = mockFetch(() => Promise.resolve(new Response("Profile page content")));
+    globalThis.fetch = mockFetch(() =>
+      Promise.resolve(new Response('{"props":{"pageProps":{"hasResults":true}}}')),
+    );
 
     const result = await Effect.runPromise(x.check("testuser"));
     expect(result).toBe(true);
   });
 
-  test("returns false when username is available (account doesn't exist)", async () => {
-    globalThis.fetch = mockFetch(() => Promise.resolve(new Response("This account doesn't exist")));
+  test("returns false when username is available", async () => {
+    globalThis.fetch = mockFetch(() =>
+      Promise.resolve(new Response('{"props":{"pageProps":{"hasResults":false}}}')),
+    );
 
     const result = await Effect.runPromise(x.check("testuser"));
     expect(result).toBe(false);
@@ -34,7 +38,7 @@ describe("X/Twitter provider", () => {
       if (attempts < 3) {
         return Promise.reject(new Error("Network error"));
       }
-      return Promise.resolve(new Response("Profile page"));
+      return Promise.resolve(new Response('{"props":{"pageProps":{"hasResults":true}}}'));
     });
 
     const result = await Effect.runPromise(x.check("testuser"));
@@ -58,12 +62,14 @@ describe("X/Twitter provider", () => {
     globalThis.fetch = mockFetch((input: RequestInfo | URL, options?: RequestInit) => {
       calledUrl = String(input);
       calledHeaders = (options?.headers as Record<string, string>) ?? {};
-      return Promise.resolve(new Response(""));
+      return Promise.resolve(new Response('{"props":{"pageProps":{"hasResults":false}}}'));
     });
 
     await Effect.runPromise(x.check("myusername"));
-    expect(calledUrl).toBe("https://x.com/myusername");
-    expect(calledHeaders["User-Agent"]).toBeDefined();
+    expect(calledUrl).toBe(
+      "https://syndication.twitter.com/srv/timeline-profile/screen-name/myusername",
+    );
+    expect(calledHeaders["User-Agent"]).toBe("curl/7.79.1");
   });
 
   test("profileUrl generates correct URL", () => {

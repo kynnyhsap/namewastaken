@@ -1,3 +1,0 @@
-[test]
-root = "src"
-timeout = 15000
