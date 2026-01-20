@@ -5,7 +5,7 @@ import { setCacheEnabled } from "../../lib/cache";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 export function registerCheckUsername(server: McpServer) {
-  (server.tool as Function)(
+  server.tool(
     "check_username",
     "Check if a username is available on social media platforms (TikTok, Instagram, X/Twitter, Threads, YouTube)",
     {

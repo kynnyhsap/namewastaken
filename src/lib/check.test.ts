@@ -2,7 +2,7 @@ import { describe, test, expect, mock, beforeEach, afterEach } from "bun:test";
 import { Effect } from "effect";
 import { checkSingle, checkAll, checkProviders } from "./check";
 import { setCacheEnabled, clearCache } from "./cache";
-import { tiktok, instagram, youtube } from "../providers";
+import { tiktok, instagram } from "../providers";
 
 describe("Check orchestration", () => {
   const originalFetch = globalThis.fetch;
@@ -48,8 +48,8 @@ describe("Check orchestration", () => {
   describe("checkAll", () => {
     test("checks all providers concurrently", async () => {
       const fetchCalls: string[] = [];
-      globalThis.fetch = mock((url: string) => {
-        fetchCalls.push(url);
+      globalThis.fetch = mock((input: RequestInfo | URL) => {
+        fetchCalls.push(String(input));
         return Promise.resolve(new Response("Not found", { status: 404 }));
       });
 
@@ -70,7 +70,8 @@ describe("Check orchestration", () => {
     });
 
     test("handles mixed results", async () => {
-      globalThis.fetch = mock((url: string) => {
+      globalThis.fetch = mock((input: RequestInfo | URL) => {
+        const url = String(input);
         if (url.includes("tiktok")) {
           return Promise.resolve(new Response(`"desc":"@testuser`));
         }
@@ -95,8 +96,8 @@ describe("Check orchestration", () => {
   describe("checkProviders", () => {
     test("checks only specified providers", async () => {
       const fetchCalls: string[] = [];
-      globalThis.fetch = mock((url: string) => {
-        fetchCalls.push(url);
+      globalThis.fetch = mock((input: RequestInfo | URL) => {
+        fetchCalls.push(String(input));
         return Promise.resolve(new Response("Not found", { status: 404 }));
       });
 

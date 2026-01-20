@@ -6,7 +6,7 @@ import { providers, resolveProvider } from "../../providers";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 export function registerCheckPlatform(server: McpServer) {
-  (server.tool as Function)(
+  server.tool(
     "check_platform",
     "Check if a username is available on a specific platform",
     {

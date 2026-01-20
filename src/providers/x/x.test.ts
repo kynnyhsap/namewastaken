@@ -51,8 +51,8 @@ describe("X/Twitter provider", () => {
     let calledUrl = "";
     let calledHeaders: Record<string, string> = {};
 
-    globalThis.fetch = mock((url: string, options?: RequestInit) => {
-      calledUrl = url;
+    globalThis.fetch = mock((input: RequestInfo | URL, options?: RequestInit) => {
+      calledUrl = String(input);
       calledHeaders = (options?.headers as Record<string, string>) ?? {};
       return Promise.resolve(new Response(""));
     });

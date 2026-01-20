@@ -2,7 +2,7 @@ import { providers } from "../../providers";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 export function registerListPlatforms(server: McpServer) {
-  (server.tool as Function)(
+  server.tool(
     "list_platforms",
     "List all supported social media platforms and their aliases",
     {},

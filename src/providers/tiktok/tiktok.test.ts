@@ -51,8 +51,8 @@ describe("TikTok provider", () => {
 
   test("calls correct URL with @ prefix", async () => {
     let calledUrl = "";
-    globalThis.fetch = mock((url: string) => {
-      calledUrl = url;
+    globalThis.fetch = mock((input: RequestInfo | URL) => {
+      calledUrl = String(input);
       return Promise.resolve(new Response(""));
     });
 

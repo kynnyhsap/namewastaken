@@ -3,27 +3,33 @@ import { type CheckResult, type CheckAllResult, type BulkCheckResult } from "./c
 import type { Provider } from "../providers";
 import { providers } from "../providers";
 
+function formatDuration(ms: number): string {
+  if (ms < 1000) return `${ms}ms`;
+  return `${(ms / 1000).toFixed(2)}s`;
+}
+
 /**
  * Format a single check result for display
  */
-export function formatSingleResult(result: CheckResult): string {
+export function formatSingleResult(result: CheckResult, durationMs?: number): string {
   const displayName = result.provider.displayName;
+  const timing = durationMs !== undefined ? pc.dim(` (${formatDuration(durationMs)})`) : "";
 
   if (result.error) {
-    return `${pc.yellow("?")} ${displayName}: ${pc.yellow(result.error)}`;
+    return `${pc.yellow("?")} ${displayName}: ${pc.yellow(result.error)}${timing}`;
   }
 
   if (result.taken) {
-    return `${pc.red("x")} ${displayName}: ${pc.red("taken")}`;
+    return `${pc.red("x")} ${displayName}: ${pc.red("taken")}${timing}`;
   }
 
-  return `${pc.green("o")} ${displayName}: ${pc.green("available")}`;
+  return `${pc.green("o")} ${displayName}: ${pc.green("available")}${timing}`;
 }
 
 /**
  * Format all results as a table
  */
-export function formatTable(checkResult: CheckAllResult): string {
+export function formatTable(checkResult: CheckAllResult, durationMs?: number): string {
   const { username, results } = checkResult;
 
   // Calculate column widths
@@ -104,7 +110,8 @@ export function formatTable(checkResult: CheckAllResult): string {
   if (taken > 0) summaryParts.push(pc.red(`${taken} taken`));
   if (errors > 0) summaryParts.push(pc.yellow(`${errors} errors`));
 
-  lines.push(`\n${summaryParts.join(", ")}`);
+  const timing = durationMs !== undefined ? pc.dim(` in ${formatDuration(durationMs)}`) : "";
+  lines.push(`\n${summaryParts.join(", ")}${timing}`);
 
   return lines.join("\n");
 }
@@ -112,7 +119,7 @@ export function formatTable(checkResult: CheckAllResult): string {
 /**
  * Format results as JSON
  */
-export function formatJson(checkResult: CheckAllResult): string {
+export function formatJson(checkResult: CheckAllResult, durationMs?: number): string {
   return JSON.stringify(
     {
       username: checkResult.username,
@@ -123,6 +130,7 @@ export function formatJson(checkResult: CheckAllResult): string {
         available: !r.taken && !r.error,
         error: r.error ?? null,
       })),
+      ...(durationMs !== undefined && { durationMs }),
     },
     null,
     2,
@@ -137,6 +145,7 @@ export function formatSingleProviderResult(
   username: string,
   result: CheckResult,
   asJson: boolean,
+  durationMs?: number,
 ): string {
   if (asJson) {
     return JSON.stringify(
@@ -147,20 +156,21 @@ export function formatSingleProviderResult(
         taken: result.taken,
         available: !result.taken && !result.error,
         error: result.error ?? null,
+        ...(durationMs !== undefined && { durationMs }),
       },
       null,
       2,
     );
   }
 
-  return formatSingleResult(result);
+  return formatSingleResult(result, durationMs);
 }
 
 /**
  * Format bulk check results as a table
  * Columns: Username | X | TikTok | Threads | YouTube | Instagram
  */
-export function formatBulkTable(bulkResult: BulkCheckResult): string {
+export function formatBulkTable(bulkResult: BulkCheckResult, durationMs?: number): string {
   const { results } = bulkResult;
   const lines: string[] = [];
 
@@ -234,7 +244,8 @@ export function formatBulkTable(bulkResult: BulkCheckResult): string {
   if (totalTaken > 0) summaryParts.push(pc.red(`${totalTaken} taken`));
   if (totalErrors > 0) summaryParts.push(pc.yellow(`${totalErrors} errors`));
 
-  lines.push(`\nTotal: ${summaryParts.join(", ")}`);
+  const timing = durationMs !== undefined ? pc.dim(` in ${formatDuration(durationMs)}`) : "";
+  lines.push(`\nTotal: ${summaryParts.join(", ")}${timing}`);
 
   return lines.join("\n");
 }
@@ -242,7 +253,7 @@ export function formatBulkTable(bulkResult: BulkCheckResult): string {
 /**
  * Format bulk check results as JSON
  */
-export function formatBulkJson(bulkResult: BulkCheckResult): string {
+export function formatBulkJson(bulkResult: BulkCheckResult, durationMs?: number): string {
   return JSON.stringify(
     {
       usernames: bulkResult.results.map((r) => ({
@@ -255,6 +266,7 @@ export function formatBulkJson(bulkResult: BulkCheckResult): string {
           error: pr.error ?? null,
         })),
       })),
+      ...(durationMs !== undefined && { durationMs }),
     },
     null,
     2,

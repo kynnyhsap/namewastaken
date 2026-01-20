@@ -6,7 +6,7 @@ import { providers, parseUrl, isUrl } from "../../providers";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 export function registerCheckUrl(server: McpServer) {
-  (server.tool as Function)(
+  server.tool(
     "check_url",
     "Check username availability by parsing a social media profile URL",
     {

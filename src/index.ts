@@ -66,28 +66,33 @@ function showHelp() {
 async function handleSingleProvider(provider: Provider, username: string, json: boolean) {
   const parsed = safeParseHandle(username);
   if (!parsed.success) {
-    console.error(pc.red(`Error: ${parsed.error.errors[0].message}`));
+    console.error(pc.red(`Error: ${parsed.error.issues[0].message}`));
     process.exit(1);
   }
 
+  const start = performance.now();
   const result = await Effect.runPromise(checkSingle(provider, parsed.data));
-  console.log(formatSingleProviderResult(provider, parsed.data, result, json));
+  const durationMs = Math.round(performance.now() - start);
+
+  console.log(formatSingleProviderResult(provider, parsed.data, result, json, durationMs));
   process.exit(0);
 }
 
 async function handleProviders(providerList: Provider[], username: string, json: boolean) {
   const parsed = safeParseHandle(username);
   if (!parsed.success) {
-    console.error(pc.red(`Error: ${parsed.error.errors[0].message}`));
+    console.error(pc.red(`Error: ${parsed.error.issues[0].message}`));
     process.exit(1);
   }
 
+  const start = performance.now();
   const result = await Effect.runPromise(checkProviders(providerList, parsed.data));
+  const durationMs = Math.round(performance.now() - start);
 
   if (json) {
-    console.log(formatJson(result));
+    console.log(formatJson(result, durationMs));
   } else {
-    console.log(formatTable(result));
+    console.log(formatTable(result, durationMs));
   }
   process.exit(0);
 }
@@ -95,16 +100,18 @@ async function handleProviders(providerList: Provider[], username: string, json:
 async function handleAllProviders(username: string, json: boolean) {
   const parsed = safeParseHandle(username);
   if (!parsed.success) {
-    console.error(pc.red(`Error: ${parsed.error.errors[0].message}`));
+    console.error(pc.red(`Error: ${parsed.error.issues[0].message}`));
     process.exit(1);
   }
 
+  const start = performance.now();
   const result = await Effect.runPromise(checkAll(parsed.data));
+  const durationMs = Math.round(performance.now() - start);
 
   if (json) {
-    console.log(formatJson(result));
+    console.log(formatJson(result, durationMs));
   } else {
-    console.log(formatTable(result));
+    console.log(formatTable(result, durationMs));
   }
   process.exit(0);
 }
@@ -116,19 +123,21 @@ async function handleBulk(usernames: string[], json: boolean) {
     const parsed = safeParseHandle(username);
     if (!parsed.success) {
       console.error(
-        pc.red(`Error: Invalid username "${username}": ${parsed.error.errors[0].message}`),
+        pc.red(`Error: Invalid username "${username}": ${parsed.error.issues[0].message}`),
       );
       process.exit(1);
     }
     validUsernames.push(parsed.data);
   }
 
+  const start = performance.now();
   const results = await Effect.runPromise(checkBulk(validUsernames));
+  const durationMs = Math.round(performance.now() - start);
 
   if (json) {
-    console.log(formatBulkJson(results));
+    console.log(formatBulkJson(results, durationMs));
   } else {
-    console.log(formatBulkTable(results));
+    console.log(formatBulkTable(results, durationMs));
   }
   process.exit(0);
 }
