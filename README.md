@@ -142,21 +142,6 @@ namewastaken mcp --http
 namewastaken mcp --http --port 3000
 ```
 
-### Claude Desktop
-
-Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "namewastaken": {
-      "command": "npx",
-      "args": ["namewastaken", "mcp"]
-    }
-  }
-}
-```
-
 ### Claude Code
 
 Add to your project's `.mcp.json`:
