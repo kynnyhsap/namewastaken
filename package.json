@@ -34,7 +34,8 @@
     }
   },
   "bin": {
-    "namewastaken": "./dist/cli.js"
+    "namewastaken": "./dist/cli.js",
+    "nwt": "./dist/cli.js"
   },
   "files": [
     "dist"
