@@ -58,6 +58,7 @@ export type CheckResults = {
   instagram?: PlatformCheckResult;
   facebook?: PlatformCheckResult;
   telegram?: PlatformCheckResult;
+  github?: PlatformCheckResult;
 };
 
 /** Full check result with summary */
@@ -248,6 +249,7 @@ const youtube = createPlatformChecker(providers.find((p) => p.name === "youtube"
 const instagram = createPlatformChecker(providers.find((p) => p.name === "instagram")!);
 const facebook = createPlatformChecker(providers.find((p) => p.name === "facebook")!);
 const telegram = createPlatformChecker(providers.find((p) => p.name === "telegram")!);
+const github = createPlatformChecker(providers.find((p) => p.name === "github")!);
 
 /**
  * Check username availability.
@@ -334,6 +336,7 @@ const nwt = {
   instagram,
   facebook,
   telegram,
+  github,
 
   // Utilities
   platforms,
@@ -355,4 +358,5 @@ export {
   instagram,
   facebook,
   telegram,
+  github,
 };

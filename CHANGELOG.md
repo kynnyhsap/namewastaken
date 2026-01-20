@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0] - 2025-01-20
+
+### Added
+- GitHub platform provider (`github`, `gh`)
+
+### Fixed
+- Threads: Use `threads.com` instead of `threads.net` for profile URLs
+
 ## [1.5.0] - 2025-01-20
 
 ### Added

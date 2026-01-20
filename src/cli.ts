@@ -42,6 +42,7 @@ ${pc.bold("  Platforms:")}
     ${pc.magenta("instagram")}  ${pc.dim("ig")}        Instagram
     ${pc.magenta("facebook")}   ${pc.dim("fb")}        Facebook
     ${pc.magenta("telegram")}   ${pc.dim("tg")}        Telegram
+    ${pc.magenta("github")}     ${pc.dim("gh")}        GitHub
 
 ${pc.bold("  Options:")}
 

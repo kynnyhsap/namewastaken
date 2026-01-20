@@ -52,9 +52,10 @@ describe("Check orchestration", () => {
       const result = await Effect.runPromise(checkAll("testuser"));
 
       expect(result.username).toBe("testuser");
-      expect(result.results).toHaveLength(7);
+      expect(result.results).toHaveLength(8);
       expect(result.results.map((r) => r.provider.name).sort()).toEqual([
         "facebook",
+        "github",
         "instagram",
         "telegram",
         "threads",
@@ -64,7 +65,7 @@ describe("Check orchestration", () => {
       ]);
 
       // All fetches should have been called
-      expect(fetchCalls).toHaveLength(7);
+      expect(fetchCalls).toHaveLength(8);
     });
 
     test("handles mixed results", async () => {

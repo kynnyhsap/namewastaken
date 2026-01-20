@@ -73,7 +73,7 @@ await nwt.taken('mrbeast')      // true - taken on at least one platform
 const result = await nwt.check('mrbeast')
 result.tiktok.taken      // true
 result.instagram.taken   // true  
-result.summary           // { available: 0, taken: 7, errors: 0 }
+result.summary           // { available: 0, taken: 8, errors: 0 }
 
 // Filter to specific platforms
 const result = await nwt.check('mrbeast', { platforms: ['tiktok', 'ig'] })
@@ -127,6 +127,7 @@ await available('mrbeast')
 | Instagram | `instagram` | `ig`            |
 | Facebook  | `facebook`  | `fb`            |
 | Telegram  | `telegram`  | `tg`            |
+| GitHub    | `github`    | `gh`            |
 
 ## MCP Server
 
