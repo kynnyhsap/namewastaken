@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 
-import { registerAllTools } from "./tools";
+import { registerTools } from "./tools";
 
 const DEFAULT_PORT = 3000;
 
@@ -17,7 +17,7 @@ export async function startHttpServer(options: HttpServerOptions = {}) {
     version: "1.0.0",
   });
 
-  registerAllTools(server);
+  registerTools(server);
 
   // Stateless mode - each request is independent
   const transport = new WebStandardStreamableHTTPServerTransport({

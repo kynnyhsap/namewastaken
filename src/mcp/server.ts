@@ -2,7 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Elysia } from "elysia";
 import { mcp } from "elysia-mcp";
 
-import { registerAllTools } from "./tools";
+import { registerTools } from "./tools";
 
 const DEFAULT_PORT = 3000;
 
@@ -24,7 +24,7 @@ export function createMcpServer(options: McpServerOptions = {}) {
         tools: {},
       },
       setupServer: async (server: McpServer) => {
-        registerAllTools(server);
+        registerTools(server);
       },
     }),
   );

@@ -2,20 +2,23 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Effect } from "effect";
 import { z } from "zod";
 
-import { setCacheEnabled } from "../../lib/cache";
-import { checkAll, checkBulk } from "../../lib/check";
+import { setCacheEnabled } from "../lib/cache";
+import { checkAll, checkBulk } from "../lib/check";
 
-export function registerCheckUsername(server: McpServer) {
-  server.tool(
-    "check_username",
-    "Check if a username is available on social media platforms (TikTok, Instagram, X/Twitter, Threads, YouTube)",
+export function registerTools(server: McpServer) {
+  // Single username check - aligns with SDK's `check(username)`
+  server.registerTool(
+    "check",
     {
-      username: z.string().describe("The username to check"),
-      useCache: z.boolean().optional().describe("Whether to use cached results (default: true)"),
+      description:
+        "Check if a username is available on social media platforms (TikTok, Instagram, X/Twitter, Threads, YouTube)",
+      inputSchema: {
+        username: z.string().describe("The username to check"),
+        cache: z.boolean().optional().describe("Use cached results (default: true)"),
+      },
     },
-    async (args: { username: string; useCache?: boolean }) => {
-      const { username, useCache = true } = args;
-      if (!useCache) setCacheEnabled(false);
+    async ({ username, cache = true }) => {
+      if (!cache) setCacheEnabled(false);
 
       try {
         const result = await Effect.runPromise(checkAll(username));
@@ -32,7 +35,7 @@ export function registerCheckUsername(server: McpServer) {
           content: [
             {
               type: "text" as const,
-              text: `Username "${username}" check results:\n\n${lines.join("\n")}\n\nSummary: ${available} available, ${taken} taken`,
+              text: `Username "${username}":\n\n${lines.join("\n")}\n\nSummary: ${available} available, ${taken} taken`,
             },
           ],
         };
@@ -41,19 +44,20 @@ export function registerCheckUsername(server: McpServer) {
       }
     },
   );
-}
 
-export function registerCheckUsernamesBulk(server: McpServer) {
-  server.tool(
-    "check_usernames_in_bulk",
-    "Check multiple usernames for availability on all social media platforms (TikTok, Instagram, X/Twitter, Threads, YouTube)",
+  // Bulk username check - aligns with SDK's `checkMany(usernames)`
+  server.registerTool(
+    "check_many",
     {
-      usernames: z.array(z.string()).describe("Array of usernames to check"),
-      useCache: z.boolean().optional().describe("Whether to use cached results (default: true)"),
+      description:
+        "Check multiple usernames for availability on social media platforms (TikTok, Instagram, X/Twitter, Threads, YouTube)",
+      inputSchema: {
+        usernames: z.array(z.string()).describe("Array of usernames to check"),
+        cache: z.boolean().optional().describe("Use cached results (default: true)"),
+      },
     },
-    async (args: { usernames: string[]; useCache?: boolean }) => {
-      const { usernames, useCache = true } = args;
-      if (!useCache) setCacheEnabled(false);
+    async ({ usernames, cache = true }) => {
+      if (!cache) setCacheEnabled(false);
 
       try {
         const result = await Effect.runPromise(checkBulk(usernames));
@@ -81,7 +85,7 @@ export function registerCheckUsernamesBulk(server: McpServer) {
           content: [
             {
               type: "text" as const,
-              text: `Bulk check for ${usernames.length} usernames:${lines.join("\n")}\n\nTotal: ${totalAvailable} available, ${totalTaken} taken`,
+              text: `Checked ${usernames.length} usernames:${lines.join("\n")}\n\nTotal: ${totalAvailable} available, ${totalTaken} taken`,
             },
           ],
         };
