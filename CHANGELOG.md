@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.2] - 2025-01-20
+
+### Fixed
+- X/Twitter: Show error instead of "available" when rate limited (affects Node.js/npx)
+
 ## [1.6.1] - 2025-01-20
 
 ### Fixed

@@ -27,6 +27,10 @@ const check = (username: string) =>
           },
         );
         const html = await response.text();
+        // Check for rate limiting (Node's fetch gets rate limited more than Bun's)
+        if (html.includes("Rate limit exceeded")) {
+          throw new Error("Rate limited by Twitter");
+        }
         // The page contains JSON with "hasResults":true for existing users
         return html.includes('"hasResults":true');
       } finally {
