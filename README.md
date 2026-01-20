@@ -130,6 +130,13 @@ await available('mrbeast')
 | Telegram  | `telegram`  | `tg`            |
 | GitHub    | `github`    | `gh`            |
 
+### Planned
+
+- Discord
+- Snapchat
+- Twitch
+- LinkedIn
+
 ## MCP Server
 
 namewastaken includes an MCP (Model Context Protocol) server for AI assistants:

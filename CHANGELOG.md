@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.3] - 2025-01-20
+
+### Fixed
+- X/Twitter: Switch to oEmbed API for reliable Node.js support (no more rate limiting)
+- CLI: Works with Node.js again (no Bun requirement)
+
 ## [1.6.2] - 2025-01-20
 
 ### Changed
