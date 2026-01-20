@@ -1,6 +1,6 @@
 {
   "name": "namewastaken",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Check if a username is taken on social platforms",
   "type": "module",
   "main": "./dist/sdk.js",

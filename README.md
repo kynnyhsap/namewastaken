@@ -8,6 +8,62 @@ Check if a username is taken across multiple social platforms.
 npm install namewastaken
 ```
 
+## SDK Usage
+
+```ts
+import nwt from 'namewastaken'
+
+// Quick boolean checks
+await nwt.available('mrbeast')  // false - taken on at least one platform
+await nwt.taken('mrbeast')      // true - taken on at least one platform
+
+// Platform-specific checks
+await nwt.tiktok.available('mrbeast')  // false
+await nwt.tiktok.taken('mrbeast')      // true
+await nwt.tiktok.check('mrbeast')      // { taken: true, available: false, url: '...' }
+
+// Full check on all platforms
+const result = await nwt.check('mrbeast')
+result.tiktok.taken      // true
+result.instagram.taken   // true  
+result.summary           // { available: 0, taken: 5, errors: 0 }
+
+// Check multiple usernames
+const results = await nwt.checkMany(['mrbeast', 'pewdiepie'])
+results.get('mrbeast').tiktok.taken  // true
+
+// Filter to specific platforms
+const filtered = await nwt.only('tiktok', 'instagram').check('mrbeast')
+filtered.tiktok.taken     // true
+filtered.youtube          // undefined (not checked)
+
+// Use aliases
+await nwt.only('tt', 'ig').check('mrbeast')  // same as above
+
+// List all platforms
+console.log(nwt.platforms)
+// [
+//   { name: 'x', displayName: 'X/Twitter', aliases: ['x', 'twitter'] },
+//   { name: 'tiktok', displayName: 'TikTok', aliases: ['tiktok', 'tt'] },
+//   ...
+// ]
+
+// Parse profile URL
+nwt.parseUrl('https://tiktok.com/@mrbeast')
+// { platform: 'tiktok', username: 'mrbeast' }
+```
+
+### Named Imports
+
+```ts
+import { check, tiktok, available, only } from 'namewastaken'
+
+await check('mrbeast')
+await tiktok.taken('mrbeast')
+await available('mrbeast')
+await only('tt', 'ig').check('mrbeast')
+```
+
 ## CLI Usage
 
 ```bash
@@ -39,57 +95,6 @@ namewastaken https://x.com/MrBeast
 
 # Output as JSON
 namewastaken mrbeast --json
-```
-
-## SDK Usage
-
-```ts
-import { check, checkBulk, platforms, parseUrl } from 'namewastaken'
-
-// Check a single username on all platforms
-const result = await check('mrbeast')
-console.log(result)
-// {
-//   username: 'mrbeast',
-//   results: [
-//     { platform: 'x', displayName: 'X/Twitter', taken: true, available: false, url: '...' },
-//     { platform: 'tiktok', displayName: 'TikTok', taken: true, available: false, url: '...' },
-//     ...
-//   ],
-//   summary: { available: 0, taken: 5, errors: 0 }
-// }
-
-// Check on specific platforms only
-const result = await check('mrbeast', { platforms: ['tiktok', 'instagram'] })
-
-// Check multiple usernames
-const results = await checkBulk(['mrbeast', 'pewdiepie', 'ninja'])
-console.log(results.summary) // { available: 2, taken: 13, errors: 0 }
-
-// List all supported platforms
-console.log(platforms)
-// [
-//   { name: 'x', displayName: 'X/Twitter', aliases: ['x', 'twitter'] },
-//   { name: 'tiktok', displayName: 'TikTok', aliases: ['tiktok', 'tt'] },
-//   ...
-// ]
-
-// Parse a profile URL
-const parsed = parseUrl('https://tiktok.com/@mrbeast')
-// { platform: 'tiktok', username: 'mrbeast' }
-```
-
-### SDK Options
-
-```ts
-interface CheckOptions {
-  // Specific platforms to check (e.g., ['tiktok', 'ig', 'x'])
-  platforms?: string[]
-  // Whether to use cached results (default: true)
-  cache?: boolean
-}
-
-await check('mrbeast', { platforms: ['tiktok', 'ig'], cache: false })
 ```
 
 ## Platforms
