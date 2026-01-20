@@ -132,19 +132,19 @@ await available('mrbeast')
 namewastaken includes an MCP (Model Context Protocol) server for AI assistants:
 
 ```bash
-# Start STDIO server (default, for Claude Desktop, etc.)
+# Start STDIO server (default)
 namewastaken mcp
 
-# Start HTTP server (for MCP Inspector, auto-selects port)
+# Start HTTP server (auto-selects port)
 namewastaken mcp --http
 
 # Start HTTP server on specific port
 namewastaken mcp --http --port 3000
 ```
 
-### Claude Desktop Configuration
+### Claude Desktop
 
-Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 ```json
 {
@@ -157,10 +157,42 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
 }
 ```
 
+### Claude Code
+
+Add to your project's `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "namewastaken": {
+      "command": "npx",
+      "args": ["namewastaken", "mcp"]
+    }
+  }
+}
+```
+
+### OpenCode
+
+Add to your `opencode.json`:
+
+```json
+{
+  "mcp": {
+    "namewastaken": {
+      "type": "local",
+      "command": ["npx", "namewastaken", "mcp"]
+    }
+  }
+}
+```
+
 ### MCP Tools
 
-- `check` - Check a username on all platforms
-- `check_many` - Check multiple usernames on all platforms
+| Tool | Description |
+|------|-------------|
+| `check` | Check a username on all platforms |
+| `check_many` | Check multiple usernames on all platforms |
 
 ## License
 
