@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2025-01-20
+
+### Added
+- MCP: HTTP server auto-selects free port when `--port` not specified
+- MCP: Claude Desktop configuration example in README
+
+### Changed
+- MCP: STDIO is now the default transport (was HTTP)
+- MCP: Use `--http` flag for HTTP transport (was default)
+- MCP: Replaced Elysia with Hono for Node.js compatibility
+- MCP: Renamed tools to align with SDK (`check`, `check_many`)
+- MCP: Renamed `useCache` param to `cache` (matches SDK)
+- CLI: Smaller bundle size (4.2MB → 2.2MB)
+
+### Fixed
+- MCP: HTTP server now works on Node.js (not just Bun)
+- MCP: Streamable HTTP transport works with MCP Inspector
+
+### Breaking Changes
+- MCP: Default transport changed from HTTP to STDIO
+  ```bash
+  # Before
+  namewastaken mcp          # HTTP server
+  namewastaken mcp --stdio  # STDIO server
+  
+  # After  
+  namewastaken mcp          # STDIO server
+  namewastaken mcp --http   # HTTP server
+  ```
+- MCP: Tool names changed
+  - `check_username` → `check`
+  - `check_usernames_in_bulk` → `check_many`
+
 ## [1.2.0] - 2025-01-20
 
 ### Added
