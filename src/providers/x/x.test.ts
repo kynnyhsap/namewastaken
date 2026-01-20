@@ -13,19 +13,15 @@ describe("X/Twitter provider", () => {
     globalThis.fetch = originalFetch;
   });
 
-  test("returns true when username is taken", async () => {
-    globalThis.fetch = mockFetch(() =>
-      Promise.resolve(new Response('{"props":{"pageProps":{"hasResults":true}}}')),
-    );
+  test("returns true when username is taken (200 response)", async () => {
+    globalThis.fetch = mockFetch(() => Promise.resolve(new Response("{}", { status: 200 })));
 
     const result = await Effect.runPromise(x.check("testuser"));
     expect(result).toBe(true);
   });
 
-  test("returns false when username is available", async () => {
-    globalThis.fetch = mockFetch(() =>
-      Promise.resolve(new Response('{"props":{"pageProps":{"hasResults":false}}}')),
-    );
+  test("returns false when username is available (404 response)", async () => {
+    globalThis.fetch = mockFetch(() => Promise.resolve(new Response("", { status: 404 })));
 
     const result = await Effect.runPromise(x.check("testuser"));
     expect(result).toBe(false);
@@ -38,7 +34,7 @@ describe("X/Twitter provider", () => {
       if (attempts < 3) {
         return Promise.reject(new Error("Network error"));
       }
-      return Promise.resolve(new Response('{"props":{"pageProps":{"hasResults":true}}}'));
+      return Promise.resolve(new Response("{}", { status: 200 }));
     });
 
     const result = await Effect.runPromise(x.check("testuser"));
@@ -55,21 +51,16 @@ describe("X/Twitter provider", () => {
     expect(result._tag).toBe("Failure");
   });
 
-  test("calls correct URL with user-agent header", async () => {
+  test("calls correct oEmbed URL", async () => {
     let calledUrl = "";
-    let calledHeaders: Record<string, string> = {};
 
-    globalThis.fetch = mockFetch((input: RequestInfo | URL, options?: RequestInit) => {
+    globalThis.fetch = mockFetch((input: RequestInfo | URL) => {
       calledUrl = String(input);
-      calledHeaders = (options?.headers as Record<string, string>) ?? {};
-      return Promise.resolve(new Response('{"props":{"pageProps":{"hasResults":false}}}'));
+      return Promise.resolve(new Response("{}", { status: 200 }));
     });
 
     await Effect.runPromise(x.check("myusername"));
-    expect(calledUrl).toBe(
-      "https://syndication.twitter.com/srv/timeline-profile/screen-name/myusername",
-    );
-    expect(calledHeaders["User-Agent"]).toBe("curl/7.79.1");
+    expect(calledUrl).toBe("https://publish.twitter.com/oembed?url=https://twitter.com/myusername");
   });
 
   test("profileUrl generates correct URL", () => {

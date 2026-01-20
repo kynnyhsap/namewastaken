@@ -48,7 +48,7 @@
     "dev": "bun --watch run ./src/cli.ts",
     "build": "bun run build:sdk && bun run build:cli",
     "build:sdk": "bun build ./src/sdk.ts --outdir=dist --outfile=dist/sdk.js --target=node --format=esm",
-    "build:cli": "bun build ./src/cli.ts --outfile=dist/cli.js --target=bun --format=esm",
+    "build:cli": "bun build ./src/cli.ts --outfile=dist/cli.js --target=node --format=esm",
     "build:types": "tsc --project tsconfig.build.json",
     "build:binary": "bun build ./src/cli.ts --compile --outfile=dist/namewastaken",
     "prepublishOnly": "bun run build && bun run build:types",

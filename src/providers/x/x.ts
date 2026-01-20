@@ -16,23 +16,15 @@ const check = (username: string) =>
       const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
       try {
-        // Use Twitter's syndication API which returns server-rendered HTML with embedded JSON
+        // Use Twitter's oEmbed API - returns 200 for existing users, 404 for non-existent
         const response = await fetch(
-          `https://syndication.twitter.com/srv/timeline-profile/screen-name/${username}`,
+          `https://publish.twitter.com/oembed?url=https://twitter.com/${username}`,
           {
             signal: controller.signal,
-            headers: {
-              "User-Agent": "curl/7.79.1",
-            },
           },
         );
-        const html = await response.text();
-        // Check for rate limiting (Node's fetch gets rate limited more than Bun's)
-        if (html.includes("Rate limit exceeded")) {
-          throw new Error("Rate limited by Twitter");
-        }
-        // The page contains JSON with "hasResults":true for existing users
-        return html.includes('"hasResults":true');
+        // 200 = user exists (taken), 404 = user doesn't exist (available)
+        return response.status === 200;
       } finally {
         clearTimeout(timeout);
       }
