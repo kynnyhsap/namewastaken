@@ -3,6 +3,8 @@ import { program } from "commander";
 import { Effect } from "effect";
 import pc from "picocolors";
 
+import pkg from "../package.json";
+
 import {
   checkAll,
   checkSingle,
@@ -20,7 +22,7 @@ import {
 import { providers, resolveProvider, parseUrl, isUrl, type Provider } from "./providers";
 import { safeParseHandle } from "./schema";
 
-const VERSION = "1.0.0";
+const VERSION = pkg.version;
 
 const HELP = `
 ${pc.bold(pc.cyan("  namewastaken"))}${pc.dim(` v${VERSION}`)}
