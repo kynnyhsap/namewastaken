@@ -57,7 +57,9 @@
     "fmt:check": "oxfmt --check src/",
     "typecheck": "tsc --noEmit --skipLibCheck",
     "lint": "oxlint src/",
-    "check": "bun run fmt:check && bun run typecheck && bun run lint && bun run test"
+    "check": "bun run fmt:check && bun run typecheck && bun run lint && bun run test",
+    "website": "bun run ./src/website/server.ts",
+    "website:dev": "bun --watch run ./src/website/server.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -73,6 +75,7 @@
     "@modelcontextprotocol/sdk": "^1.25.3",
     "commander": "^12.1.0",
     "effect": "^3.12.5",
+    "elysia": "^1.4.22",
     "hono": "^4.11.4",
     "picocolors": "^1.1.1",
     "zod": "4"
