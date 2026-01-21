@@ -147,48 +147,67 @@ header.site-header {
 /* Search box */
 .search-box {
   display: flex;
-  gap: 10px;
-}
-
-.search-input {
-  flex: 1;
-  padding: 14px 18px;
-  font-size: 15px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  color: var(--text);
-  outline: none;
+  align-items: baseline;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 12px;
   transition: border-color 0.2s;
 }
 
-.search-input:focus {
+.search-box:focus-within {
   border-color: var(--text-muted);
 }
 
-.search-input::placeholder {
+.search-prefix {
+  font-family: var(--font-display);
+  font-size: 48px;
+  font-weight: 600;
   color: var(--text-muted);
+  user-select: none;
+  line-height: 1;
 }
 
-.search-btn {
-  padding: 14px 24px;
-  font-size: 14px;
-  font-weight: 500;
-  background: var(--text);
-  color: var(--bg);
+.search-input-wrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0;
+  font-family: var(--font-display);
+  font-size: 48px;
+  font-weight: 600;
+  background: transparent;
   border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: opacity 0.2s;
+  color: var(--text);
+  outline: none;
+  caret-color: var(--accent);
+  caret-shape: block;
+  line-height: 1.2;
 }
 
-.search-btn:hover {
-  opacity: 0.9;
+.search-placeholder {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-display);
+  font-size: 48px;
+  font-weight: 600;
+  color: var(--text-muted);
+  line-height: 1.2;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
 }
 
-.search-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.search-placeholder.fade-out {
+  opacity: 0;
+}
+
+.search-placeholder.hidden {
+  display: none;
 }
 
 /* Hero visual - floating cards */
@@ -648,12 +667,10 @@ footer {
     font-size: 32px;
   }
   
-  .search-box {
-    flex-direction: column;
-  }
-  
-  .search-btn {
-    width: 100%;
+  .search-prefix,
+  .search-input,
+  .search-placeholder {
+    font-size: 32px;
   }
   
   .results-grid {

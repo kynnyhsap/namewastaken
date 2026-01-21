@@ -7,8 +7,47 @@ const staticDir = `${import.meta.dir}/static`;
 
 // Simple in-memory rate limiter
 const rateLimiter = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT = 10; // requests per window
+const RATE_LIMIT = 60; // requests per window (higher for instant search)
 const RATE_WINDOW = 60 * 1000; // 1 minute
+
+// Simple in-memory cache for username checks
+interface CacheEntry {
+  data: {
+    username: string;
+    results: Record<string, { taken: boolean; available: boolean; url: string; error?: string }>;
+    summary: { available: number; taken: number; errors: number };
+  };
+  expiresAt: number;
+}
+const usernameCache = new Map<string, CacheEntry>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+function getCachedResult(username: string): CacheEntry["data"] | null {
+  const entry = usernameCache.get(username);
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) {
+    usernameCache.delete(username);
+    return null;
+  }
+  return entry.data;
+}
+
+function setCachedResult(username: string, data: CacheEntry["data"]): void {
+  usernameCache.set(username, {
+    data,
+    expiresAt: Date.now() + CACHE_TTL,
+  });
+}
+
+// Clean up expired cache entries periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [username, entry] of usernameCache) {
+    if (now > entry.expiresAt) {
+      usernameCache.delete(username);
+    }
+  }
+}, CACHE_TTL);
 
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
@@ -72,15 +111,22 @@ const app = new Elysia()
       }
 
       const { username } = body;
+      const normalizedUsername = username?.toLowerCase();
 
       // Validate username
-      if (!username || !/^[a-z0-9._]+$/i.test(username)) {
+      if (!normalizedUsername || !/^[a-z0-9._]+$/i.test(normalizedUsername)) {
         set.status = 400;
         return { error: "Invalid username format" };
       }
 
+      // Check cache first
+      const cached = getCachedResult(normalizedUsername);
+      if (cached) {
+        return cached;
+      }
+
       try {
-        const result = await Effect.runPromise(checkAll(username.toLowerCase()));
+        const result = await Effect.runPromise(checkAll(normalizedUsername));
 
         // Format response
         const results: Record<
@@ -103,16 +149,21 @@ const app = new Elysia()
           results[r.provider.name] = {
             taken: r.taken,
             available: !r.taken && !r.error,
-            url: r.provider.profileUrl(username.toLowerCase()),
+            url: r.provider.profileUrl(normalizedUsername),
             ...(r.error && { error: r.error }),
           };
         }
 
-        return {
-          username: username.toLowerCase(),
+        const responseData = {
+          username: normalizedUsername,
           results,
           summary: { available, taken, errors },
         };
+
+        // Cache the result
+        setCachedResult(normalizedUsername, responseData);
+
+        return responseData;
       } catch (error) {
         console.error("Check error:", error);
         set.status = 500;

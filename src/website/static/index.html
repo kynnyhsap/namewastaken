@@ -9,7 +9,7 @@
   <meta property="og:description" content="Check if a username is available across social platforms">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://namewastaken.co">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>@</text></svg>">
+  <link rel="icon" href="https://svgl.app/library/threads_dark.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -41,15 +41,21 @@
           <p>See if your username is available across TikTok, Instagram, X, YouTube, and more. CLI, SDK, and MCP server included.</p>
           
           <div class="search-box">
-            <input 
-              type="text" 
-              class="search-input" 
-              id="username-input"
-              placeholder="Enter a username..."
-              autocomplete="off"
-              spellcheck="false"
-            >
-            <button class="search-btn" id="check-btn">Check</button>
+            <span class="search-prefix">@</span>
+            <div class="search-input-wrapper">
+              <input 
+                type="text" 
+                class="search-input" 
+                id="username-input"
+                autocomplete="off"
+                spellcheck="false"
+                autofocus
+                data-1p-ignore
+                data-lpignore="true"
+                data-form-type="other"
+              >
+              <span class="search-placeholder" id="search-placeholder"></span>
+            </div>
           </div>
 
           <!-- Results -->

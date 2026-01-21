@@ -14,11 +14,96 @@ const PLATFORMS = [
 ];
 
 const input = document.getElementById("username-input");
-const btn = document.getElementById("check-btn");
 const resultsEl = document.getElementById("results");
 const resultsTitle = document.getElementById("results-title");
 const resultsSummary = document.getElementById("results-summary");
 const resultsGrid = document.getElementById("results-grid");
+const placeholder = document.getElementById("search-placeholder");
+
+// Rotating placeholder usernames
+const PLACEHOLDER_USERNAMES = [
+  "MrBeast",
+  "ElonMusk",
+  "Ninja",
+  "PewDiePie",
+  "KylieJenner",
+  "Zuck",
+  "TimCook",
+  "mkbhd",
+  "katyperry",
+  "cristiano",
+];
+
+let placeholderIndex = 0;
+let placeholderInterval = null;
+
+function shuffleArray(array) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+let shuffledUsernames = shuffleArray(PLACEHOLDER_USERNAMES);
+
+// Set initial placeholder immediately
+placeholder.textContent = shuffledUsernames[0];
+
+function rotatePlaceholder() {
+  // Fade out
+  placeholder.classList.add("fade-out");
+
+  setTimeout(() => {
+    // Change text
+    placeholderIndex = (placeholderIndex + 1) % shuffledUsernames.length;
+    if (placeholderIndex === 0) {
+      shuffledUsernames = shuffleArray(PLACEHOLDER_USERNAMES);
+    }
+    placeholder.textContent = shuffledUsernames[placeholderIndex];
+
+    // Fade in
+    placeholder.classList.remove("fade-out");
+  }, 400);
+}
+
+function startPlaceholderRotation() {
+  if (!placeholderInterval && !input.value) {
+    placeholder.classList.remove("hidden");
+    placeholderInterval = setInterval(rotatePlaceholder, 2500);
+  }
+}
+
+function stopPlaceholderRotation() {
+  if (placeholderInterval) {
+    clearInterval(placeholderInterval);
+    placeholderInterval = null;
+  }
+}
+
+// Hide placeholder when user types, show when empty
+input.addEventListener("input", () => {
+  if (input.value) {
+    stopPlaceholderRotation();
+    placeholder.classList.add("hidden");
+  } else {
+    placeholder.classList.remove("hidden");
+    startPlaceholderRotation();
+  }
+});
+
+// Start rotation on load
+startPlaceholderRotation();
+
+// Debounce helper
+function debounce(fn, delay) {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), delay);
+  };
+}
 
 // Show loading state
 function showLoading(username) {
@@ -74,19 +159,28 @@ function showError(message) {
   resultsGrid.innerHTML = "";
 }
 
+// Track current request to avoid race conditions
+let currentRequest = null;
+
 // Check username
 async function checkUsername() {
   const username = input.value.trim().toLowerCase();
-  if (!username) return;
 
-  // Validate
-  if (!/^[a-z0-9._]+$/i.test(username)) {
-    alert("Invalid username. Only letters, numbers, dots, and underscores allowed.");
+  // Hide results if input is empty
+  if (!username) {
+    resultsEl.classList.remove("visible");
     return;
   }
 
-  btn.disabled = true;
-  btn.textContent = "Checking...";
+  // Validate
+  if (!/^[a-z0-9._]+$/i.test(username)) {
+    return;
+  }
+
+  // Create a unique identifier for this request
+  const requestId = Date.now();
+  currentRequest = requestId;
+
   showLoading(username);
 
   try {
@@ -96,6 +190,9 @@ async function checkUsername() {
       body: JSON.stringify({ username }),
     });
 
+    // Ignore if a newer request has been made
+    if (currentRequest !== requestId) return;
+
     const data = await res.json();
 
     if (!res.ok) {
@@ -104,21 +201,18 @@ async function checkUsername() {
 
     showResults(data);
   } catch (err) {
-    showError(err.message);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Check";
+    // Only show error if this is still the current request
+    if (currentRequest === requestId) {
+      showError(err.message);
+    }
   }
 }
 
-// Event listeners
-btn.addEventListener("click", checkUsername);
-input.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") checkUsername();
-});
+// Debounced version for input events
+const debouncedCheck = debounce(checkUsername, 400);
 
-// Focus input on load
-input.focus();
+// Event listeners
+input.addEventListener("input", debouncedCheck);
 
 // Copy to clipboard
 const CODE_SNIPPETS = {
