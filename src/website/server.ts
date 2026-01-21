@@ -1,5 +1,5 @@
-import { Elysia, t } from "elysia";
 import { Effect } from "effect";
+import { Elysia, t } from "elysia";
 
 import { checkAll } from "../lib/check";
 
@@ -83,7 +83,10 @@ const app = new Elysia()
         const result = await Effect.runPromise(checkAll(username.toLowerCase()));
 
         // Format response
-        const results: Record<string, { taken: boolean; available: boolean; url: string; error?: string }> = {};
+        const results: Record<
+          string,
+          { taken: boolean; available: boolean; url: string; error?: string }
+        > = {};
         let available = 0;
         let taken = 0;
         let errors = 0;
@@ -120,9 +123,9 @@ const app = new Elysia()
       body: t.Object({
         username: t.String(),
       }),
-    }
+    },
   )
   .get("/api/health", () => ({ ok: true }))
-  .listen(process.env.PORT || 3000);
+  .listen(process.env.PORT || 4040);
 
 console.log(`Website running at http://localhost:${app.server?.port}`);
