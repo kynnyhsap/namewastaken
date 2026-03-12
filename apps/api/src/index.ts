@@ -1,8 +1,7 @@
 import { Hono } from "hono";
 import type { Context } from "hono";
 import { cors } from "hono/cors";
-
-import { check, platforms } from "../../../src/sdk";
+import { check, platforms } from "namewastaken";
 
 interface ApiResult {
   username: string;
@@ -162,6 +161,10 @@ function formatResult(result: Awaited<ReturnType<typeof check>>): ApiResult {
 
 const app = new Hono();
 
+function health(c: Context): Response {
+  return c.json({ ok: true });
+}
+
 app.use(
   "*",
   cors({
@@ -172,7 +175,8 @@ app.use(
   }),
 );
 
-app.get("/health", (c) => c.json({ ok: true }));
+app.get("/", health);
+app.get("/health", health);
 
 async function handleCheck(c: Context): Promise<Response> {
   const now = Date.now();

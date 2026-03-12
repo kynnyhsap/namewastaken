@@ -1,0 +1,74 @@
+{
+  "name": "namewastaken",
+  "version": "1.6.3",
+  "description": "Check if a username is taken on social platforms",
+  "keywords": [
+    "availability",
+    "checker",
+    "cli",
+    "facebook",
+    "github",
+    "handle",
+    "instagram",
+    "mcp",
+    "model-context-protocol",
+    "social-media",
+    "telegram",
+    "threads",
+    "tiktok",
+    "twitter",
+    "username",
+    "x",
+    "youtube"
+  ],
+  "homepage": "https://github.com/kynnyhsap/namewastaken",
+  "license": "MIT",
+  "author": "kynnyhsap",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kynnyhsap/namewastaken.git"
+  },
+  "bin": {
+    "namewastaken": "./dist/cli.js",
+    "nwt": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./src/sdk.ts",
+  "types": "./src/sdk.ts",
+  "exports": {
+    ".": {
+      "types": "./src/sdk.ts",
+      "import": "./src/sdk.ts"
+    }
+  },
+  "scripts": {
+    "cli": "bun run ./src/cli.ts",
+    "dev": "bun --watch run ./src/cli.ts",
+    "build": "bun run build:sdk && bun run build:cli",
+    "build:sdk": "bun build ./src/sdk.ts --outdir=dist --outfile=dist/sdk.js --target=node --format=esm",
+    "build:cli": "bun build ./src/cli.ts --outfile=dist/cli.js --target=node --format=esm",
+    "build:types": "tsc --project tsconfig.build.json",
+    "build:binary": "bun build ./src/cli.ts --compile --outfile=dist/namewastaken",
+    "test": "bun test",
+    "lint": "oxlint src/",
+    "typecheck": "tsgo --project tsconfig.json --noEmit --skipLibCheck",
+    "check": "bun run lint && bun run typecheck && bun run test"
+  },
+  "dependencies": {
+    "@hono/mcp": "^0.2.3",
+    "@hono/node-server": "^1.19.9",
+    "@modelcontextprotocol/sdk": "^1.25.3",
+    "commander": "^12.1.0",
+    "effect": "^3.12.5",
+    "elysia": "^1.4.22",
+    "hono": "^4.11.4",
+    "picocolors": "^1.1.1",
+    "zod": "4"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

@@ -15,8 +15,8 @@ The check command must pass cleanly before considering the task done. Fix any er
 - `bun lint` - run oxlint on source files
 - `bun lint:type-aware` - run type-aware linting
 - `bun lint:type-aware:check` - run type-aware linting with type-check diagnostics
-- `bun typecheck` - run TypeScript native type checking (tsgo)
-- `bun check` - run root checks plus monorepo app checks
+- `bun typecheck` - run TypeScript checks across workspaces with Turbo
+- `bun check` - run root checks plus monorepo workspace checks
 
 ## Dev Commands
 

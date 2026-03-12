@@ -3,6 +3,12 @@
   "name": "namewastaken-website",
   "main": "src/index.ts",
   "compatibility_date": "2026-03-12",
+  "routes": [
+    {
+      "pattern": "namewastaken.com",
+      "custom_domain": true,
+    },
+  ],
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",

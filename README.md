@@ -6,13 +6,16 @@ Check if a username is taken across multiple social platforms.
 
 This repository is a Bun workspace monorepo powered by Turbo:
 
-- Root package: `namewastaken` (CLI + SDK)
+- `packages/cli`: `namewastaken` CLI package (includes SDK)
 - `apps/api`: Cloudflare Worker API
 - `apps/website`: Cloudflare Worker website
 
 ### Local Development
 
 ```bash
+# Run CLI in watch mode
+bun dev:cli
+
 # Run API worker
 bun dev:api
 

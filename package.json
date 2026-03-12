@@ -1,88 +1,34 @@
 {
-  "name": "namewastaken",
-  "version": "1.6.3",
-  "description": "Check if a username is taken on social platforms",
-  "keywords": [
-    "availability",
-    "checker",
-    "cli",
-    "facebook",
-    "github",
-    "handle",
-    "instagram",
-    "mcp",
-    "model-context-protocol",
-    "social-media",
-    "telegram",
-    "threads",
-    "tiktok",
-    "twitter",
-    "username",
-    "x",
-    "youtube"
-  ],
-  "homepage": "https://github.com/kynnyhsap/namewastaken",
-  "license": "MIT",
-  "author": "kynnyhsap",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/kynnyhsap/namewastaken.git"
-  },
-  "bin": {
-    "namewastaken": "./dist/cli.js",
-    "nwt": "./dist/cli.js"
-  },
+  "name": "namewastaken-monorepo",
+  "private": true,
   "workspaces": [
-    "apps/*"
-  ],
-  "files": [
-    "dist"
+    "apps/*",
+    "packages/*"
   ],
   "type": "module",
-  "main": "./dist/sdk.js",
-  "exports": {
-    ".": {
-      "types": "./dist/sdk.d.ts",
-      "import": "./dist/sdk.js"
-    }
-  },
   "scripts": {
-    "cli": "bun run ./src/cli.ts",
+    "cli": "bun --cwd packages/cli cli",
     "dev": "bun run dev:cloudflare",
-    "dev:cli": "bun --watch run ./src/cli.ts",
+    "dev:cli": "bun --cwd packages/cli dev",
     "dev:cloudflare": "turbo run dev --filter=@namewastaken/api --filter=@namewastaken/website --parallel",
     "dev:api": "turbo run dev --filter=@namewastaken/api",
     "dev:website": "turbo run dev --filter=@namewastaken/website",
-    "build": "bun run build:sdk && bun run build:cli",
+    "build": "bun --cwd packages/cli build",
     "build:apps": "turbo run build --filter=@namewastaken/api --filter=@namewastaken/website",
-    "build:sdk": "bun build ./src/sdk.ts --outdir=dist --outfile=dist/sdk.js --target=node --format=esm",
-    "build:cli": "bun build ./src/cli.ts --outfile=dist/cli.js --target=node --format=esm",
-    "build:types": "tsc --project tsconfig.build.json",
-    "build:binary": "bun build ./src/cli.ts --compile --outfile=dist/namewastaken",
-    "prepublishOnly": "bun run build && bun run build:types",
-    "test": "bun test",
+    "build:types": "bun --cwd packages/cli build:types",
+    "build:binary": "bun --cwd packages/cli build:binary",
+    "test": "bun --cwd packages/cli test",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
     "fmt": "bun run format",
     "fmt:check": "bun run format:check",
-    "typecheck": "tsgo --noEmit --skipLibCheck",
-    "lint": "oxlint src/",
-    "lint:type-aware": "oxlint --type-aware src/",
-    "lint:type-aware:check": "oxlint --type-aware --type-check src/",
-    "check:root": "bun run format:check && bun run lint:type-aware:check && bun run typecheck && bun run test",
-    "check:apps": "turbo run check --filter=@namewastaken/api --filter=@namewastaken/website",
-    "check": "bun run check:root && bun run check:apps"
-  },
-  "dependencies": {
-    "@hono/mcp": "^0.2.3",
-    "@hono/node-server": "^1.19.9",
-    "@modelcontextprotocol/sdk": "^1.25.3",
-    "commander": "^12.1.0",
-    "effect": "^3.12.5",
-    "elysia": "^1.4.22",
-    "hono": "^4.11.4",
-    "picocolors": "^1.1.1",
-    "zod": "4"
+    "lint": "oxlint .",
+    "lint:type-aware": "oxlint --type-aware .",
+    "lint:type-aware:check": "oxlint --type-aware --type-check .",
+    "typecheck": "turbo run typecheck",
+    "check:root": "bun run format:check",
+    "check:workspaces": "turbo run check",
+    "check": "bun run check:root && bun run check:workspaces"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -92,9 +38,6 @@
     "oxlint-tsgolint": "^0.16.0",
     "turbo": "^2.8.0",
     "wrangler": "^4.8.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
   },
   "packageManager": "bun@1.3.10"
 }
