@@ -4,12 +4,24 @@ import { mock } from "bun:test";
  * Creates a properly typed fetch mock that satisfies Bun's fetch type.
  * This handles the `preconnect` property that Bun's fetch type requires.
  */
-export function mockFetch<T extends (...args: never[]) => Promise<Response | never>>(
+export function mockFetch<T extends (...args: never[]) => Promise<Response>>(
   implementation: T,
 ): typeof fetch {
   const mockedFn = mock(implementation) as unknown as typeof fetch;
   mockedFn.preconnect = mock(() => {});
   return mockedFn;
+}
+
+export function requestInfoToUrl(input: RequestInfo | URL): string {
+  if (typeof input === "string") {
+    return input;
+  }
+
+  if (input instanceof URL) {
+    return input.toString();
+  }
+
+  return input.url;
 }
 
 /**

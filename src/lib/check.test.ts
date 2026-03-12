@@ -3,7 +3,7 @@ import { describe, test, expect, afterEach } from "bun:test";
 import { Effect } from "effect";
 
 import { tiktok, instagram } from "../providers";
-import { mockFetch } from "../test-utils";
+import { mockFetch, requestInfoToUrl } from "../test-utils";
 
 import { checkSingle, checkAll, checkProviders } from "./check";
 
@@ -45,7 +45,7 @@ describe("Check orchestration", () => {
     test("checks all providers concurrently", async () => {
       const fetchCalls: string[] = [];
       globalThis.fetch = mockFetch((input: RequestInfo | URL) => {
-        fetchCalls.push(String(input));
+        fetchCalls.push(requestInfoToUrl(input));
         return Promise.resolve(new Response("Not found", { status: 404 }));
       });
 
@@ -70,7 +70,7 @@ describe("Check orchestration", () => {
 
     test("handles mixed results", async () => {
       globalThis.fetch = mockFetch((input: RequestInfo | URL) => {
-        const url = String(input);
+        const url = requestInfoToUrl(input);
         if (url.includes("tiktok")) {
           return Promise.resolve(new Response(`"desc":"@testuser`));
         }
@@ -96,7 +96,7 @@ describe("Check orchestration", () => {
     test("checks only specified providers", async () => {
       const fetchCalls: string[] = [];
       globalThis.fetch = mockFetch((input: RequestInfo | URL) => {
-        fetchCalls.push(String(input));
+        fetchCalls.push(requestInfoToUrl(input));
         return Promise.resolve(new Response("Not found", { status: 404 }));
       });
 

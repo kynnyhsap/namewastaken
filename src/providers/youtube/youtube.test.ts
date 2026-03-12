@@ -2,7 +2,7 @@ import { describe, test, expect, afterEach } from "bun:test";
 
 import { Effect } from "effect";
 
-import { mockFetch } from "../../test-utils";
+import { mockFetch, requestInfoToUrl } from "../../test-utils";
 
 import { youtube } from "./youtube";
 
@@ -63,7 +63,7 @@ describe("YouTube provider", () => {
   test("calls correct URL with @ prefix", async () => {
     let calledUrl = "";
     globalThis.fetch = mockFetch((input: RequestInfo | URL) => {
-      calledUrl = String(input);
+      calledUrl = requestInfoToUrl(input);
       return Promise.resolve(new Response("", { status: 200 }));
     });
 

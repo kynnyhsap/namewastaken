@@ -2,7 +2,7 @@ import { describe, test, expect, afterEach } from "bun:test";
 
 import { Effect } from "effect";
 
-import { mockFetch } from "../../test-utils";
+import { mockFetch, requestInfoToUrl } from "../../test-utils";
 
 import { instagram } from "./instagram";
 
@@ -56,7 +56,7 @@ describe("Instagram provider", () => {
   test("calls correct URL", async () => {
     let calledUrl = "";
     globalThis.fetch = mockFetch((input: RequestInfo | URL) => {
-      calledUrl = String(input);
+      calledUrl = requestInfoToUrl(input);
       return Promise.resolve(new Response(""));
     });
 

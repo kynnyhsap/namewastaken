@@ -2,7 +2,7 @@ import { describe, test, expect, afterEach } from "bun:test";
 
 import { Effect } from "effect";
 
-import { mockFetch } from "../../test-utils";
+import { mockFetch, requestInfoToUrl } from "../../test-utils";
 
 import { github } from "./github";
 
@@ -56,7 +56,7 @@ describe("GitHub provider", () => {
     let calledMethod = "";
 
     globalThis.fetch = mockFetch((input: RequestInfo | URL, options?: RequestInit) => {
-      calledUrl = String(input);
+      calledUrl = requestInfoToUrl(input);
       calledMethod = options?.method ?? "GET";
       return Promise.resolve(new Response("", { status: 200 }));
     });

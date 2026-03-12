@@ -45,56 +45,56 @@ namewastaken mrbeast --json
 
 ### CLI Options
 
-| Option              | Description                              |
-|---------------------|------------------------------------------|
-| `-j, --json`        | Output results as JSON                   |
-| `-p, --platforms`   | Check specific platform(s)               |
-| `-q, --quiet`       | No output, exit 0 if available, 1 if taken |
-| `-v, --version`     | Show version number                      |
-| `-h, --help`        | Show help message                        |
+| Option            | Description                                |
+| ----------------- | ------------------------------------------ |
+| `-j, --json`      | Output results as JSON                     |
+| `-p, --platforms` | Check specific platform(s)                 |
+| `-q, --quiet`     | No output, exit 0 if available, 1 if taken |
+| `-v, --version`   | Show version number                        |
+| `-h, --help`      | Show help message                          |
 
 ### CLI Commands
 
-| Command         | Description                          |
-|-----------------|--------------------------------------|
-| `platforms`     | List all supported platforms         |
-| `mcp`           | Start MCP server (STDIO)             |
-| `mcp --http`    | Start MCP server (HTTP)              |
+| Command      | Description                  |
+| ------------ | ---------------------------- |
+| `platforms`  | List all supported platforms |
+| `mcp`        | Start MCP server (STDIO)     |
+| `mcp --http` | Start MCP server (HTTP)      |
 
 ## SDK Usage
 
 ```ts
-import nwt from 'namewastaken'
+import nwt from "namewastaken";
 
 // Quick boolean checks
-await nwt.available('mrbeast')  // false - taken on at least one platform
-await nwt.taken('mrbeast')      // true - taken on at least one platform
+await nwt.available("mrbeast"); // false - taken on at least one platform
+await nwt.taken("mrbeast"); // true - taken on at least one platform
 
 // Full check on all platforms
-const result = await nwt.check('mrbeast')
-result.tiktok.taken      // true
-result.instagram.taken   // true  
-result.summary           // { available: 0, taken: 8, errors: 0 }
+const result = await nwt.check("mrbeast");
+result.tiktok.taken; // true
+result.instagram.taken; // true
+result.summary; // { available: 0, taken: 8, errors: 0 }
 
 // Filter to specific platforms
-const result = await nwt.check('mrbeast', { platforms: ['tiktok', 'ig'] })
-result.tiktok.taken     // true
-result.youtube          // undefined (not checked)
+const result = await nwt.check("mrbeast", { platforms: ["tiktok", "ig"] });
+result.tiktok.taken; // true
+result.youtube; // undefined (not checked)
 
 // Check multiple usernames
-const results = await nwt.checkMany(['mrbeast', 'pewdiepie'])
-results.get('mrbeast').tiktok.taken  // true
+const results = await nwt.checkMany(["mrbeast", "pewdiepie"]);
+results.get("mrbeast").tiktok.taken; // true
 
 // With platform filter
-const results = await nwt.checkMany(['mrbeast', 'pewdiepie'], { platforms: ['tt'] })
+const results = await nwt.checkMany(["mrbeast", "pewdiepie"], { platforms: ["tt"] });
 
 // Platform-specific checks (shorthand)
-await nwt.tiktok.available('mrbeast')  // false
-await nwt.tiktok.taken('mrbeast')      // true
-await nwt.tiktok.check('mrbeast')      // { taken: true, available: false, url: '...' }
+await nwt.tiktok.available("mrbeast"); // false
+await nwt.tiktok.taken("mrbeast"); // true
+await nwt.tiktok.check("mrbeast"); // { taken: true, available: false, url: '...' }
 
 // List all platforms
-console.log(nwt.platforms)
+console.log(nwt.platforms);
 // [
 //   { name: 'x', displayName: 'X/Twitter', aliases: ['x', 'twitter'] },
 //   { name: 'tiktok', displayName: 'TikTok', aliases: ['tiktok', 'tt'] },
@@ -102,33 +102,33 @@ console.log(nwt.platforms)
 // ]
 
 // Parse profile URL
-nwt.parseUrl('https://tiktok.com/@mrbeast')
+nwt.parseUrl("https://tiktok.com/@mrbeast");
 // { platform: 'tiktok', username: 'mrbeast' }
 ```
 
 ### Named Imports
 
 ```ts
-import { check, checkMany, tiktok, available } from 'namewastaken'
+import { check, checkMany, tiktok, available } from "namewastaken";
 
-await check('mrbeast')
-await check('mrbeast', { platforms: ['tt', 'ig'] })
-await tiktok.taken('mrbeast')
-await available('mrbeast')
+await check("mrbeast");
+await check("mrbeast", { platforms: ["tt", "ig"] });
+await tiktok.taken("mrbeast");
+await available("mrbeast");
 ```
 
 ## Platforms
 
-| Platform  | Name        | Aliases         |
-|-----------|-------------|-----------------|
-| X/Twitter | `x`         | `twitter`       |
-| TikTok    | `tiktok`    | `tt`            |
-| Threads   | `threads`   |                 |
-| YouTube   | `youtube`   | `yt`            |
-| Instagram | `instagram` | `ig`            |
-| Facebook  | `facebook`  | `fb`            |
-| Telegram  | `telegram`  | `tg`            |
-| GitHub    | `github`    | `gh`            |
+| Platform  | Name        | Aliases   |
+| --------- | ----------- | --------- |
+| X/Twitter | `x`         | `twitter` |
+| TikTok    | `tiktok`    | `tt`      |
+| Threads   | `threads`   |           |
+| YouTube   | `youtube`   | `yt`      |
+| Instagram | `instagram` | `ig`      |
+| Facebook  | `facebook`  | `fb`      |
+| Telegram  | `telegram`  | `tg`      |
+| GitHub    | `github`    | `gh`      |
 
 ### Planned
 
@@ -184,9 +184,9 @@ Add to your `opencode.json`:
 
 ### MCP Tools
 
-| Tool | Description |
-|------|-------------|
-| `check` | Check a username on all platforms |
+| Tool         | Description                               |
+| ------------ | ----------------------------------------- |
+| `check`      | Check a username on all platforms         |
 | `check_many` | Check multiple usernames on all platforms |
 
 ## License

@@ -5,44 +5,53 @@ All notable changes to this project will be documented in this file.
 ## [1.6.3] - 2025-01-20
 
 ### Fixed
+
 - X/Twitter: Switch to oEmbed API for reliable Node.js support (no more rate limiting)
 - CLI: Works with Node.js again (no Bun requirement)
 
 ## [1.6.2] - 2025-01-20
 
 ### Changed
+
 - CLI now requires Bun runtime (fixes X/Twitter rate limiting with Node.js)
 
 ### Fixed
+
 - X/Twitter: Reliable detection (Node.js fetch was being rate limited by Twitter)
 
 ## [1.6.1] - 2025-01-20
 
 ### Fixed
+
 - CLI version now syncs with package.json automatically
 
 ## [1.6.0] - 2025-01-20
 
 ### Added
+
 - GitHub platform provider (`github`, `gh`)
 - `-q, --quiet` flag for scripting (no output, exit 0 if available, 1 if taken)
 - `-j` alias for `--json`
 
 ### Fixed
+
 - Threads: Use `threads.com` instead of `threads.net` for profile URLs
 
 ## [1.5.0] - 2025-01-20
 
 ### Added
+
 - Telegram platform provider (`telegram`, `tg`)
 - Facebook platform provider (`facebook`, `fb`)
 - `nwt` CLI alias - use `npx nwt mrbeast` as shorthand
 
 ### Changed
+
 - X/Twitter: Now uses syndication API for reliable detection
 - Removed cache functionality (was causing stale results)
 
 ### Breaking Changes
+
 - Removed `--no-cache` CLI option
 - Removed `cache clear` and `cache stats` CLI commands
 - Removed `cache` option from SDK methods
@@ -50,10 +59,12 @@ All notable changes to this project will be documented in this file.
 ## [1.3.0] - 2025-01-20
 
 ### Added
+
 - MCP: HTTP server auto-selects free port when `--port` not specified
 - MCP: Claude Desktop configuration example in README
 
 ### Changed
+
 - MCP: STDIO is now the default transport (was HTTP)
 - MCP: Use `--http` flag for HTTP transport (was default)
 - MCP: Replaced Elysia with Hono for Node.js compatibility
@@ -62,20 +73,24 @@ All notable changes to this project will be documented in this file.
 - CLI: Smaller bundle size (4.2MB → 2.2MB)
 
 ### Fixed
+
 - MCP: HTTP server now works on Node.js (not just Bun)
 - MCP: Streamable HTTP transport works with MCP Inspector
 
 ### Breaking Changes
+
 - MCP: Default transport changed from HTTP to STDIO
+
   ```bash
   # Before
   namewastaken mcp          # HTTP server
   namewastaken mcp --stdio  # STDIO server
-  
-  # After  
+
+  # After
   namewastaken mcp          # STDIO server
   namewastaken mcp --http   # HTTP server
   ```
+
 - MCP: Tool names changed
   - `check_username` → `check`
   - `check_usernames_in_bulk` → `check_many`
@@ -83,27 +98,32 @@ All notable changes to this project will be documented in this file.
 ## [1.2.0] - 2025-01-20
 
 ### Added
+
 - SDK: `{ platforms: [...] }` option for filtering platforms in `check()`, `checkMany()`, `available()`, `taken()`
 - CLI: `--platforms` as primary flag name (`-p` still works)
 - Package keywords for npm discoverability
 
 ### Changed
+
 - SDK: Removed `.only()` method - use `{ platforms: [...] }` option instead
 - README: CLI documentation now comes before SDK
 
 ### Breaking Changes
+
 - SDK: `.only()` removed - migrate to options:
+
   ```ts
   // Before
-  await nwt.only('tiktok', 'ig').check('mrbeast')
-  
+  await nwt.only("tiktok", "ig").check("mrbeast");
+
   // After
-  await nwt.check('mrbeast', { platforms: ['tiktok', 'ig'] })
+  await nwt.check("mrbeast", { platforms: ["tiktok", "ig"] });
   ```
 
 ## [1.1.0] - 2025-01-20
 
 ### Added
+
 - SDK for programmatic usage
 - `check()` - check single username
 - `checkMany()` - check multiple usernames (returns Map)
@@ -113,12 +133,14 @@ All notable changes to this project will be documented in this file.
 - TypeScript declarations
 
 ### Changed
+
 - Results now keyed by platform name instead of array
 - Bulk results return `Map` for O(1) lookup
 
 ## [1.0.0] - 2025-01-20
 
 ### Added
+
 - CLI tool to check username availability
 - Support for TikTok, Instagram, X/Twitter, Threads, YouTube
 - Single username check: `namewastaken mrbeast`

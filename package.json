@@ -53,11 +53,15 @@
     "build:binary": "bun build ./src/cli.ts --compile --outfile=dist/namewastaken",
     "prepublishOnly": "bun run build && bun run build:types",
     "test": "bun test",
-    "fmt": "oxfmt --write src/",
-    "fmt:check": "oxfmt --check src/",
-    "typecheck": "tsc --noEmit --skipLibCheck",
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt --check .",
+    "fmt": "bun run format",
+    "fmt:check": "bun run format:check",
+    "typecheck": "tsgo --noEmit --skipLibCheck",
     "lint": "oxlint src/",
-    "check": "bun run fmt:check && bun run typecheck && bun run lint && bun run test",
+    "lint:type-aware": "oxlint --type-aware src/",
+    "lint:type-aware:check": "oxlint --type-aware --type-check src/",
+    "check": "bun run format:check && bun run lint:type-aware:check && bun run typecheck && bun run test",
     "website": "bun run ./src/website/server.ts",
     "website:dev": "bun --watch run ./src/website/server.ts"
   },
@@ -74,8 +78,10 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
+    "@typescript/native-preview": "latest",
     "oxfmt": "^0.39.0",
-    "oxlint": "^1.54.0"
+    "oxlint": "^1.54.0",
+    "oxlint-tsgolint": "^0.16.0"
   },
   "peerDependencies": {
     "typescript": "^5"

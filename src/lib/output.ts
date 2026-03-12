@@ -1,6 +1,6 @@
-import type { Provider } from "../providers";
 import pc from "picocolors";
 
+import type { Provider } from "../providers";
 import { providers } from "../providers";
 
 import { type CheckResult, type CheckAllResult, type BulkCheckResult } from "./check";

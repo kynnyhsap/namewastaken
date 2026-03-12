@@ -1,11 +1,10 @@
-import type { Provider } from "./types";
-
 import { facebook } from "./facebook";
 import { github } from "./github";
 import { instagram } from "./instagram";
 import { telegram } from "./telegram";
 import { threads } from "./threads";
 import { tiktok } from "./tiktok";
+import type { Provider } from "./types";
 import { x } from "./x";
 import { youtube } from "./youtube";
 

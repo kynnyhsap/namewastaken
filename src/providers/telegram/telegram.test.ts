@@ -2,7 +2,7 @@ import { describe, test, expect, afterEach } from "bun:test";
 
 import { Effect } from "effect";
 
-import { mockFetch } from "../../test-utils";
+import { mockFetch, requestInfoToUrl } from "../../test-utils";
 
 import { telegram } from "./telegram";
 
@@ -66,7 +66,7 @@ describe("Telegram provider", () => {
     let calledHeaders: Record<string, string> = {};
 
     globalThis.fetch = mockFetch((input: RequestInfo | URL, options?: RequestInit) => {
-      calledUrl = String(input);
+      calledUrl = requestInfoToUrl(input);
       calledHeaders = (options?.headers as Record<string, string>) ?? {};
       return Promise.resolve(
         new Response('<meta property="og:image" content="https://telegram.org/img/t_logo_2x.png">'),
