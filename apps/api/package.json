@@ -1,0 +1,16 @@
+{
+  "name": "@namewastaken/api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bunx wrangler dev --port 8787 --inspector-port 9230",
+    "build": "bunx wrangler deploy --dry-run",
+    "deploy": "bunx wrangler deploy",
+    "lint": "oxlint src/",
+    "typecheck": "tsgo --project tsconfig.json --noEmit",
+    "check": "bun run lint && bun run typecheck"
+  },
+  "dependencies": {
+    "hono": "^4.11.4"
+  }
+}

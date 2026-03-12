@@ -2,6 +2,27 @@
 
 Check if a username is taken across multiple social platforms.
 
+## Monorepo
+
+This repository is a Bun workspace monorepo powered by Turbo:
+
+- Root package: `namewastaken` (CLI + SDK)
+- `apps/api`: Cloudflare Worker API
+- `apps/website`: Cloudflare Worker website
+
+### Local Development
+
+```bash
+# Run API worker
+bun dev:api
+
+# Run website worker
+bun dev:website
+
+# Run both workers together
+bun dev:cloudflare
+```
+
 ## Installation
 
 ```bash

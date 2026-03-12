@@ -5,3 +5,6 @@ dist/
 opencode.json
 
 .env
+.turbo
+.wrangler
+apps/**/.wrangler

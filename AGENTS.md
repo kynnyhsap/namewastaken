@@ -16,4 +16,10 @@ The check command must pass cleanly before considering the task done. Fix any er
 - `bun lint:type-aware` - run type-aware linting
 - `bun lint:type-aware:check` - run type-aware linting with type-check diagnostics
 - `bun typecheck` - run TypeScript native type checking (tsgo)
-- `bun check` - run format check, lint:type-aware:check, typecheck, and tests
+- `bun check` - run root checks plus monorepo app checks
+
+## Dev Commands
+
+- `bun dev:api` - run Cloudflare API worker in local dev mode
+- `bun dev:website` - run Cloudflare website worker in local dev mode
+- `bun dev:cloudflare` - run API and website workers together with Turbo
