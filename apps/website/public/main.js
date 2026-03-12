@@ -161,6 +161,8 @@ function showError(message) {
 
 // Track current request to avoid race conditions
 let currentRequest = null;
+const CLIENT_CACHE_TTL_MS = 2 * 60 * 1000;
+const clientCache = new Map();
 
 // Check username
 async function checkUsername() {
@@ -168,6 +170,11 @@ async function checkUsername() {
 
   // Hide results if input is empty
   if (!username) {
+    resultsEl.classList.remove("visible");
+    return;
+  }
+
+  if (username.length < 2) {
     resultsEl.classList.remove("visible");
     return;
   }
@@ -181,13 +188,18 @@ async function checkUsername() {
   const requestId = Date.now();
   currentRequest = requestId;
 
+  const cached = clientCache.get(username);
+  if (cached && Date.now() <= cached.expiresAt) {
+    showResults(cached.data);
+    return;
+  }
+
   showLoading(username);
 
   try {
-    const res = await fetch("/api/check", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username }),
+    const res = await fetch(`/check/${encodeURIComponent(username)}`, {
+      method: "GET",
+      headers: { Accept: "application/json" },
     });
 
     // Ignore if a newer request has been made
@@ -199,6 +211,11 @@ async function checkUsername() {
       throw new Error(data.error || "Failed to check username");
     }
 
+    clientCache.set(username, {
+      data,
+      expiresAt: Date.now() + CLIENT_CACHE_TTL_MS,
+    });
+
     showResults(data);
   } catch (err) {
     // Only show error if this is still the current request
@@ -209,7 +226,7 @@ async function checkUsername() {
 }
 
 // Debounced version for input events
-const debouncedCheck = debounce(checkUsername, 400);
+const debouncedCheck = debounce(checkUsername, 600);
 
 // Event listeners
 input.addEventListener("input", debouncedCheck);

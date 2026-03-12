@@ -23,6 +23,16 @@ bun dev:website
 bun dev:cloudflare
 ```
 
+### Hosted API
+
+The Cloudflare API is designed to run behind `https://api.namewastaken.co`.
+
+- `GET /health`
+- `GET /check/:username`
+- `GET /check/:username/:platform`
+- `GET /check/:username?platforms=["tiktok","ig"]`
+- `GET /check/:username?platforms=tiktok,ig,yt`
+
 ## Installation
 
 ```bash

@@ -10,14 +10,12 @@ type Bindings = {
 const app = new Hono<{ Bindings: Bindings }>();
 
 function getApiBaseUrl(env: Bindings): string {
-  return (env.API_BASE_URL ?? "http://127.0.0.1:8787").replace(/\/$/, "");
+  return (env.API_BASE_URL ?? "https://api.namewastaken.co").replace(/\/$/, "");
 }
 
-async function proxyApi(
-  c: { env: Bindings; req: { raw: Request } },
-  path: string,
-): Promise<Response> {
-  const targetUrl = `${getApiBaseUrl(c.env)}${path}`;
+async function proxyApi(c: { env: Bindings; req: { raw: Request } }): Promise<Response> {
+  const sourceUrl = new URL(c.req.raw.url);
+  const targetUrl = `${getApiBaseUrl(c.env)}${sourceUrl.pathname}${sourceUrl.search}`;
   const sourceRequest = c.req.raw;
 
   const headers = new Headers(sourceRequest.headers);
@@ -44,8 +42,9 @@ async function proxyApi(
   });
 }
 
-app.post("/api/check", (c) => proxyApi(c, "/api/check"));
-app.get("/api/health", (c) => proxyApi(c, "/api/health"));
+app.get("/health", (c) => proxyApi(c));
+app.get("/check/:username", (c) => proxyApi(c));
+app.get("/check/:username/:platform", (c) => proxyApi(c));
 
 app.all("*", (c) => c.env.ASSETS.fetch(c.req.raw));
 

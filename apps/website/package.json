@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bunx wrangler dev --port 4040 --inspector-port 9231",
+    "dev": "bunx wrangler dev --port 4040 --inspector-port 9231 --var API_BASE_URL:http://127.0.0.1:8787",
     "build": "bunx wrangler deploy --dry-run",
     "deploy": "bunx wrangler deploy",
     "lint": "oxlint src/",
