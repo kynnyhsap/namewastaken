@@ -1,15 +1,17 @@
-{
-  "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "printWidth": 100,
-  "experimentalSortImports": {
-    "groups": [
+import { defineConfig } from "oxfmt";
+
+export default defineConfig({
+  printWidth: 100,
+
+  sortImports: {
+    groups: [
       ["side-effect"],
       ["builtin"],
       ["external", "external-type"],
       ["internal", "internal-type"],
       ["parent", "parent-type"],
       ["sibling", "sibling-type"],
-      ["index", "index-type"]
-    ]
-  }
-}
+      ["index", "index-type"],
+    ],
+  },
+});

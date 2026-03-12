@@ -3,38 +3,30 @@
   "version": "1.6.3",
   "description": "Check if a username is taken on social platforms",
   "keywords": [
-    "username",
-    "handle",
     "availability",
     "checker",
-    "social-media",
-    "tiktok",
-    "instagram",
-    "twitter",
-    "x",
-    "threads",
-    "youtube",
-    "facebook",
-    "telegram",
-    "github",
     "cli",
+    "facebook",
+    "github",
+    "handle",
+    "instagram",
     "mcp",
-    "model-context-protocol"
+    "model-context-protocol",
+    "social-media",
+    "telegram",
+    "threads",
+    "tiktok",
+    "twitter",
+    "username",
+    "x",
+    "youtube"
   ],
-  "author": "kynnyhsap",
+  "homepage": "https://github.com/kynnyhsap/namewastaken",
   "license": "MIT",
+  "author": "kynnyhsap",
   "repository": {
     "type": "git",
     "url": "https://github.com/kynnyhsap/namewastaken.git"
-  },
-  "homepage": "https://github.com/kynnyhsap/namewastaken",
-  "type": "module",
-  "main": "./dist/sdk.js",
-  "exports": {
-    ".": {
-      "import": "./dist/sdk.js",
-      "types": "./dist/sdk.d.ts"
-    }
   },
   "bin": {
     "namewastaken": "./dist/cli.js",
@@ -43,6 +35,14 @@
   "files": [
     "dist"
   ],
+  "type": "module",
+  "main": "./dist/sdk.js",
+  "exports": {
+    ".": {
+      "types": "./dist/sdk.d.ts",
+      "import": "./dist/sdk.js"
+    }
+  },
   "scripts": {
     "cli": "bun run ./src/cli.ts",
     "dev": "bun --watch run ./src/cli.ts",
@@ -61,14 +61,6 @@
     "website": "bun run ./src/website/server.ts",
     "website:dev": "bun --watch run ./src/website/server.ts"
   },
-  "devDependencies": {
-    "@types/bun": "latest",
-    "oxfmt": "^0.26.0",
-    "oxlint": "^1.41.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  },
   "dependencies": {
     "@hono/mcp": "^0.2.3",
     "@hono/node-server": "^1.19.9",
@@ -79,5 +71,13 @@
     "hono": "^4.11.4",
     "picocolors": "^1.1.1",
     "zod": "4"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "oxfmt": "^0.39.0",
+    "oxlint": "^1.54.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
   }
 }
